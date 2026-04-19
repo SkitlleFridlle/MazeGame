@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze RPG: Level 1</title>
+    <style>
+        /* CSS STYLES */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none; /* Prevent scrolling on mobile */
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid #333;
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 4 / 3;
+        }
+
+        canvas {
+            display: block;
+            background-color: #000;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px black;
+            font-size: clamp(12px, 2vw, 16px);
+        }
+
+        #hud {
+            font-size: clamp(12px, 2vw, 16px);
+            margin-bottom: 5px;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: clamp(10px, 1.5vw, 12px);
+            color: #888;
+            pointer-events: none;
+            display: none; /* Hide keyboard controls on mobile */
+        }
+
+        /* Mobile Controls */
+        #mobile-controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .control-group {
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            backdrop-filter: blur(5px);
+        }
+
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+
+        .arrow-up {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Hide mobile controls on desktop */
+        @media (min-width: 768px) {
+            #mobile-controls {
+                display: none;
+            }
+            #controls {
+                display: block;
+            }
+        }
+
+        #game-over-screen, #level-complete-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            display: none;
+        }
+
+        h1 { margin: 0 0 10px 0; color: #fff; }
+        p { margin: 0 0 20px 0; color: #ccc; }
+        
+        button {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 10px 20px;
+            font-family: inherit;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #555; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="hud">Level: <span id="level-display">1</span> | Time: <span id="time-display">0</span>s</div>
+        </div>
+        
+        <canvas id="gameCanvas" width="640" height="480"></canvas>
+
+        <div id="controls">
+            Controls: Arrow Keys or WASD to Move
+        </div>
+
+        <!-- Mobile Touch Controls -->
+        <div id="mobile-controls">
+            <div class="control-group">
+                <div class="control-btn" id="btn-left">←</div>
+                <div class="control-btn" id="btn-down">↓</div>
+                <div class="control-btn" id="btn-up">↑</div>
+                <div class="control-btn" id="btn-right">→</div>
+            </div>
+        </div>
+
+        <div id="game-over-screen">
+            <h1>GAME OVER</h1>
+            <p>You hit a wall or fell into a pit.</p>
+            <button onclick="game.resetGame()">Try Again</button>
+        </div>
+
+        <div id="level-complete-screen">
+            <h1>LEVEL COMPLETE!</h1>
+            <p>Time: <span id="final-time">0</span>s</p>
+            <button onclick="game.nextLevel()">Next Level</button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * GAME DESIGN SUMMARY
+         * 
+         * This is a minimalist 2D top-down maze RPG.
+         * The player is a white square navigating a black-and-white pixel maze.
+         * The goal is to reach the green exit tile.
+         * 
+         * Core Systems:
+         * 1. Grid-based movement (4 directions)
+         * 2. Procedurally generated mazes using a simple algorithm
+         * 3. Collision detection against walls (black pixels)
+         * 4. Level progression (1 to 100)
+         * 5. Timer and HUD
+         */
+
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Game State
+                this.level = 1;
+                this.score = 0;
+                this.startTime = Date.now();
+                this.isGameOver = false;
+                this.isLevelComplete = false;
+
+                // Grid Settings
+                this.tileSize = 20;
+                this.grid = [];
+                this.player = { x: 1, y: 1 };
+                this.exit = { x: 0, y: 0 };
+
+                // DOM Elements
+                this.levelDisplay = document.getElementById('level-display');
+                this.timeDisplay = document.getElementById('time-display');
+                this.finalTimeDisplay = document.getElementById('final-time');
+                this.gameOverScreen = document.getElementById('game-over-screen');
+                this.levelCompleteScreen = document.getElementById('level-complete-screen');
+
+                // Input Handling
+                this.keys = {};
+                window.addEventListener('keydown', (e) => this.keys[e.key] = true);
+                window.addEventListener('keyup', (e) => this.keys[e.key] = false);
+
+                // Mobile Touch Controls
+                this.setupTouchControls();
+
+                // Start Game
+                this.init();
+            }
+
+            init() {
+                this.level = 1;
+                this.resetLevel();
+                this.gameLoop();
+            }
+
+            resetGame() {
+                this.level = 1;
+                this.resetLevel();
+                this.gameOverScreen.style.display = 'none';
+                this.isGameOver = false;
+            }
+
+            resetLevel() {
+                this.isLevelComplete = false;
+                this.levelCompleteScreen.style.display = 'none';
+                this.startTime = Date.now();
+                this.generateMaze();
+                this.updateHUD();
+            }
+
+            nextLevel() {
+                this.level++;
+                if (this.level > 100) {
+                    alert("Congratulations! You've completed all 100 levels!");
+                    this.level = 1;
+                }
+                this.resetLevel();
+            }
+
+            // --- MAZE GENERATION ---
+            // Simple Recursive Backtracker Algorithm
+            generateMaze() {
+                const width = Math.floor(this.canvas.width / this.tileSize);
+                const height = Math.floor(this.canvas.height / this.tileSize);
+
+                // Initialize grid (0 = wall, 1 = path)
+                this.grid = Array.from({ length: height }, () => Array(width).fill(0));
+
+                // Start carving from (1,1)
+                this.carve(1, 1);
+
+                // Place Player and Exit
+                this.player.x = 1;
+                this.player.y = 1;
+
+                // Find a random path tile for the exit (not too close to start)
+                let exitFound = false;
+                while (!exitFound) {
+                    const ex = Math.floor(Math.random() * (width - 2)) + 1;
+                    const ey = Math.floor(Math.random() * (height - 2)) + 1;
+                    if (this.grid[ey][ex] === 1 && (ex > width/2 || ey > height/2)) {
+                        this.exit.x = ex;
+                        this.exit.y = ey;
+                        exitFound = true;
+                    }
+                }
+            }
+
+            carve(x, y) {
+                const dirs = [[0, -2], [2, 0], [0, 2], [-2, 0]];
+                // Shuffle directions
+                for (let i = dirs.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+                }
+
+                this.grid[y][x] = 1; // Mark as path
+
+                for (let [dx, dy] of dirs) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    const mx = x + dx/2;
+                    const my = y + dy/2;
+
+                    if (nx > 0 && nx < this.grid[0].length - 1 && 
+                        ny > 0 && ny < this.grid.length - 1 && 
+                        this.grid[ny][nx] === 0) {
+                        
+                        this.grid[my][mx] = 1; // Carve passage
+                        this.carve(nx, ny);
+                    }
+                }
+            }
+
+            // --- GAME LOGIC ---
+            update() {
+                if (this.isGameOver || this.isLevelComplete) return;
+
+                const speed = 1;
+                let dx = 0, dy = 0;
+
+                // Input
+                if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) dy = -speed;
+                if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) dy = speed;
+                if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) dx = -speed;
+                if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) dx = speed;
+
+                if (dx !== 0 || dy !== 0) {
+                    this.movePlayer(dx, dy);
+                }
+
+                this.updateHUD();
+            }
+
+            movePlayer(dx, dy) {
+                const newX = this.player.x + dx;
+                const newY = this.player.y + dy;
+
+                // Boundary Check
+                if (newX < 0 || newX >= this.grid[0].length || 
+                    newY < 0 || newY >= this.grid.length) {
+                    return;
+                }
+
+                // Wall Collision Check (Grid-based)
+                // We check the tile the player is trying to move into
+                const targetTile = this.grid[Math.floor(newY)][Math.floor(newX)];
+                
+                // If it's a wall (0), don't move
+                if (targetTile === 0) {
+                    return;
+                }
+
+                // Move
+                this.player.x = newX;
+                this.player.y = newY;
+
+                // Check Win Condition
+                if (Math.floor(this.player.x) === this.exit.x && 
+                    Math.floor(this.player.y) === this.exit.y) {
+                    this.completeLevel();
+                }
+            }
+
+            completeLevel() {
+                this.isLevelComplete = true;
+                this.levelCompleteScreen.style.display = 'flex';
+                const time = Math.floor((Date.now() - this.startTime) / 1000);
+                this.finalTimeDisplay.innerText = time;
+            }
+
+            updateHUD() {
+                this.levelDisplay.innerText = this.level;
+                const time = Math.floor((Date.now() - this.startTime) / 1000);
+                this.timeDisplay.innerText = time;
+            }
+
+            // --- RENDERING ---
+            draw() {
+                // Clear Screen
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw Grid
+                for (let y = 0; y < this.grid.length; y++) {
+                    for (let x = 0; x < this.grid[y].length; x++) {
+                        if (this.grid[y][x] === 0) {
+                            // Wall
+                            this.ctx.fillStyle = '#000';
+                            this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
+                            // Add pixel border for style
+                            this.ctx.strokeStyle = '#111';
+                            this.ctx.strokeRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
+                        } else {
+                            // Path
+                            this.ctx.fillStyle = '#111';
+                            this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
+                        }
+                    }
+                }
+
+                // Draw Exit
+                this.ctx.fillStyle = '#0f0';
+                this.ctx.fillRect(this.exit.x * this.tileSize, this.exit.y * this.tileSize, this.tileSize, this.tileSize);
+                this.ctx.strokeStyle = '#fff';
+                this.ctx.strokeRect(this.exit.x * this.tileSize, this.exit.y * this.tileSize, this.tileSize, this.tileSize);
+
+                // Draw Player
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillRect(this.player.x * this.tileSize, this.player.y * this.tileSize, this.tileSize, this.tileSize);
+                
+                // Add "Eyes" to player
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(this.player.x * this.tileSize + 5, this.player.y * this.tileSize + 5, 3, 3);
+                this.ctx.fillRect(this.player.x * this.tileSize + 12, this.player.y * this.tileSize + 5, 3, 3);
+            }
+
+            // --- MOBILE TOUCH CONTROLS ---
+            setupTouchControls() {
+                const btnUp = document.getElementById('btn-up');
+                const btnDown = document.getElementById('btn-down');
+                const btnLeft = document.getElementById('btn-left');
+                const btnRight = document.getElementById('btn-right');
+
+                // Helper to add touch events to a button
+                const addTouchEvents = (btn, key) => {
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = true;
+                    });
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = false;
+                    });
+                    btn.addEventListener('touchcancel', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = false;
+                    });
+                    // Also support mouse for testing on desktop
+                    btn.addEventListener('mousedown', (e) => {
+                        this.keys[key] = true;
+                    });
+                    btn.addEventListener('mouseup', (e) => {
+                        this.keys[key] = false;
+                    });
+                    btn.addEventListener('mouseleave', (e) => {
+                        this.keys[key] = false;
+                    });
+                };
+
+                addTouchEvents(btnUp, 'ArrowUp');
+                addTouchEvents(btnDown, 'ArrowDown');
+                addTouchEvents(btnLeft, 'ArrowLeft');
+                addTouchEvents(btnRight, 'ArrowRight');
+            }
+
+            gameLoop() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+
+        // Start the game when the page loads
+        const game = new Game();
+
+    </script>
+</body>
+</html>
