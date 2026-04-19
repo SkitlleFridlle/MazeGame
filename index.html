@@ -18,17 +18,24 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
+            touch-action: none; /* Prevent scrolling on mobile */
         }
 
         #game-container {
             position: relative;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             border: 2px solid #333;
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 4 / 3;
         }
 
         canvas {
             display: block;
             background-color: #000;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
         }
 
         #ui-layer {
@@ -37,10 +44,11 @@
             left: 10px;
             pointer-events: none;
             text-shadow: 1px 1px 2px black;
+            font-size: clamp(12px, 2vw, 16px);
         }
 
         #hud {
-            font-size: 16px;
+            font-size: clamp(12px, 2vw, 16px);
             margin-bottom: 5px;
         }
 
@@ -49,9 +57,67 @@
             bottom: 10px;
             width: 100%;
             text-align: center;
-            font-size: 12px;
+            font-size: clamp(10px, 1.5vw, 12px);
             color: #888;
             pointer-events: none;
+            display: none; /* Hide keyboard controls on mobile */
+        }
+
+        /* Mobile Controls */
+        #mobile-controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .control-group {
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            backdrop-filter: blur(5px);
+        }
+
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+
+        .arrow-up {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Hide mobile controls on desktop */
+        @media (min-width: 768px) {
+            #mobile-controls {
+                display: none;
+            }
+            #controls {
+                display: block;
+            }
         }
 
         #game-over-screen, #level-complete-screen {
@@ -96,6 +162,16 @@
 
         <div id="controls">
             Controls: Arrow Keys or WASD to Move
+        </div>
+
+        <!-- Mobile Touch Controls -->
+        <div id="mobile-controls">
+            <div class="control-group">
+                <div class="control-btn" id="btn-left">←</div>
+                <div class="control-btn" id="btn-down">↓</div>
+                <div class="control-btn" id="btn-up">↑</div>
+                <div class="control-btn" id="btn-right">→</div>
+            </div>
         </div>
 
         <div id="game-over-screen">
@@ -156,6 +232,9 @@
                 this.keys = {};
                 window.addEventListener('keydown', (e) => this.keys[e.key] = true);
                 window.addEventListener('keyup', (e) => this.keys[e.key] = false);
+
+                // Mobile Touch Controls
+                this.setupTouchControls();
 
                 // Start Game
                 this.init();
@@ -347,6 +426,45 @@
                 this.ctx.fillStyle = '#000';
                 this.ctx.fillRect(this.player.x * this.tileSize + 5, this.player.y * this.tileSize + 5, 3, 3);
                 this.ctx.fillRect(this.player.x * this.tileSize + 12, this.player.y * this.tileSize + 5, 3, 3);
+            }
+
+            // --- MOBILE TOUCH CONTROLS ---
+            setupTouchControls() {
+                const btnUp = document.getElementById('btn-up');
+                const btnDown = document.getElementById('btn-down');
+                const btnLeft = document.getElementById('btn-left');
+                const btnRight = document.getElementById('btn-right');
+
+                // Helper to add touch events to a button
+                const addTouchEvents = (btn, key) => {
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = true;
+                    });
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = false;
+                    });
+                    btn.addEventListener('touchcancel', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = false;
+                    });
+                    // Also support mouse for testing on desktop
+                    btn.addEventListener('mousedown', (e) => {
+                        this.keys[key] = true;
+                    });
+                    btn.addEventListener('mouseup', (e) => {
+                        this.keys[key] = false;
+                    });
+                    btn.addEventListener('mouseleave', (e) => {
+                        this.keys[key] = false;
+                    });
+                };
+
+                addTouchEvents(btnUp, 'ArrowUp');
+                addTouchEvents(btnDown, 'ArrowDown');
+                addTouchEvents(btnLeft, 'ArrowLeft');
+                addTouchEvents(btnRight, 'ArrowRight');
             }
 
             gameLoop() {
