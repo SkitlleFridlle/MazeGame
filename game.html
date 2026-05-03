@@ -387,8 +387,8 @@
                 this.player = { x: 1, y: 1 };
                 this.exit = { x: 0, y: 0 };
 
-                // Current Style Theme
-                this.currentStyle = 'bw';
+                // Current Style Theme - Read from localStorage
+                this.currentStyle = localStorage.getItem('mazeRPGStyle') || 'bw';
 
                 // DOM Elements
                 this.levelDisplay = document.getElementById('level-display');
@@ -401,6 +401,9 @@
 
                 // Setup style selector
                 this.setupStyleSelector();
+
+                // Apply saved style on load
+                this.applyStyle(this.currentStyle);
 
                 // Input Handling
                 this.keys = {};
@@ -430,22 +433,32 @@
                 });
             }
 
+            applyStyle(styleName) {
+                // Update HUD text shadow
+                const hud = document.getElementById('hud');
+                if (hud && STYLE_THEMES[styleName]) {
+                    hud.style.textShadow = STYLE_THEMES[styleName].hudShadow;
+                }
+
+                // Update active state in dropdown
+                document.querySelectorAll('.style-option').forEach(option => {
+                    option.classList.toggle('active', option.dataset.style === styleName);
+                });
+            }
+
             setStyle(styleName) {
                 if (!STYLE_THEMES[styleName]) return;
                 
                 this.currentStyle = styleName;
                 
-                // Update active state in dropdown
-                document.querySelectorAll('.style-option').forEach(option => {
-                    option.classList.toggle('active', option.dataset.style === styleName);
-                });
+                // Save to localStorage
+                localStorage.setItem('mazeRPGStyle', styleName);
+
+                // Apply the style
+                this.applyStyle(styleName);
 
                 // Close dropdown
                 this.styleDropdown.classList.remove('show');
-
-                // Update HUD text shadow
-                const hud = document.getElementById('hud');
-                hud.style.textShadow = STYLE_THEMES[styleName].hudShadow;
 
                 // Redraw immediately
                 this.draw();
