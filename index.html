@@ -135,6 +135,84 @@
             display: none;
         }
 
+        /* Style Selector Button */
+        #style-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 20;
+            pointer-events: auto;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        #style-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Style Selector Dropdown */
+        #style-dropdown {
+            position: absolute;
+            top: 55px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 20;
+            display: none;
+            backdrop-filter: blur(10px);
+            min-width: 150px;
+        }
+
+        #style-dropdown.show {
+            display: block;
+        }
+
+        .style-option {
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid transparent;
+        }
+
+        .style-option:hover {
+            transform: translateX(3px);
+        }
+
+        .style-option.active {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .style-option .preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Style Previews */
+        .preview-bw { background: linear-gradient(135deg, #000 50%, #fff 50%); }
+        .preview-galaxy { background: linear-gradient(135deg, #1a0033, #001133, #003322); }
+        .preview-colorful { background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1); }
+
         h1 { margin: 0 0 10px 0; color: #fff; }
         p { margin: 0 0 20px 0; color: #ccc; }
         
@@ -185,6 +263,25 @@
             <p>Time: <span id="final-time">0</span>s</p>
             <button onclick="game.nextLevel()">Next Level</button>
         </div>
+
+        <!-- Style Selector Button -->
+        <button id="style-btn" title="Change Style">🎨</button>
+
+        <!-- Style Selector Dropdown -->
+        <div id="style-dropdown">
+            <div class="style-option active" data-style="bw" onclick="game.setStyle('bw')">
+                <span class="preview preview-bw"></span>
+                <span>Black & White</span>
+            </div>
+            <div class="style-option" data-style="galaxy" onclick="game.setStyle('galaxy')">
+                <span class="preview preview-galaxy"></span>
+                <span>Galaxy</span>
+            </div>
+            <div class="style-option" data-style="colorful" onclick="game.setStyle('colorful')">
+                <span class="preview preview-colorful"></span>
+                <span>Colorful</span>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -202,6 +299,46 @@
          * 4. Level progression (1 to 100)
          * 5. Timer and HUD
          */
+
+        // Style Themes Configuration
+        const STYLE_THEMES = {
+            bw: {
+                name: 'Black & White',
+                background: '#000000',
+                wall: '#000000',
+                wallBorder: '#111111',
+                path: '#111111',
+                exit: '#00ff00',
+                exitBorder: '#ffffff',
+                player: '#ffffff',
+                playerEyes: '#000000',
+                hudShadow: '1px 1px 2px black'
+            },
+            galaxy: {
+                name: 'Galaxy',
+                background: '#0a0015',
+                wall: '#1a0033',
+                wallBorder: '#2a0050',
+                path: '#0d0020',
+                exit: '#ffd700',
+                exitBorder: '#ffaa00',
+                player: '#e0e0ff',
+                playerEyes: '#4400aa',
+                hudShadow: '0 0 10px rgba(150, 100, 255, 0.5)'
+            },
+            colorful: {
+                name: 'Colorful',
+                background: '#1a1a2e',
+                wall: '#16213e',
+                wallBorder: '#0f3460',
+                path: '#1a1a2e',
+                exit: '#e94560',
+                exitBorder: '#ff6b6b',
+                player: '#4ecdc4',
+                playerEyes: '#1a1a2e',
+                hudShadow: '0 0 10px rgba(78, 205, 196, 0.5)'
+            }
+        };
 
         class Game {
             constructor() {
@@ -221,12 +358,20 @@
                 this.player = { x: 1, y: 1 };
                 this.exit = { x: 0, y: 0 };
 
+                // Current Style Theme
+                this.currentStyle = 'bw';
+
                 // DOM Elements
                 this.levelDisplay = document.getElementById('level-display');
                 this.timeDisplay = document.getElementById('time-display');
                 this.finalTimeDisplay = document.getElementById('final-time');
                 this.gameOverScreen = document.getElementById('game-over-screen');
                 this.levelCompleteScreen = document.getElementById('level-complete-screen');
+                this.styleBtn = document.getElementById('style-btn');
+                this.styleDropdown = document.getElementById('style-dropdown');
+
+                // Setup style selector
+                this.setupStyleSelector();
 
                 // Input Handling
                 this.keys = {};
@@ -238,6 +383,43 @@
 
                 // Start Game
                 this.init();
+            }
+
+            // --- STYLE SELECTOR ---
+            setupStyleSelector() {
+                // Toggle dropdown on button click
+                this.styleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.styleDropdown.classList.toggle('show');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!this.styleDropdown.contains(e.target) && e.target !== this.styleBtn) {
+                        this.styleDropdown.classList.remove('show');
+                    }
+                });
+            }
+
+            setStyle(styleName) {
+                if (!STYLE_THEMES[styleName]) return;
+                
+                this.currentStyle = styleName;
+                
+                // Update active state in dropdown
+                document.querySelectorAll('.style-option').forEach(option => {
+                    option.classList.toggle('active', option.dataset.style === styleName);
+                });
+
+                // Close dropdown
+                this.styleDropdown.classList.remove('show');
+
+                // Update HUD text shadow
+                const hud = document.getElementById('hud');
+                hud.style.textShadow = STYLE_THEMES[styleName].hudShadow;
+
+                // Redraw immediately
+                this.draw();
             }
 
             init() {
@@ -390,8 +572,10 @@
 
             // --- RENDERING ---
             draw() {
-                // Clear Screen
-                this.ctx.fillStyle = '#000';
+                const theme = STYLE_THEMES[this.currentStyle];
+
+                // Clear Screen with background color
+                this.ctx.fillStyle = theme.background;
                 this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
                 // Draw Grid
@@ -399,31 +583,37 @@
                     for (let x = 0; x < this.grid[y].length; x++) {
                         if (this.grid[y][x] === 0) {
                             // Wall
-                            this.ctx.fillStyle = '#000';
+                            this.ctx.fillStyle = theme.wall;
                             this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
                             // Add pixel border for style
-                            this.ctx.strokeStyle = '#111';
+                            this.ctx.strokeStyle = theme.wallBorder;
                             this.ctx.strokeRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
                         } else {
                             // Path
-                            this.ctx.fillStyle = '#111';
+                            this.ctx.fillStyle = theme.path;
                             this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
                         }
                     }
                 }
 
-                // Draw Exit
-                this.ctx.fillStyle = '#0f0';
+                // Draw Exit with glow effect
+                this.ctx.shadowColor = theme.exit;
+                this.ctx.shadowBlur = 10;
+                this.ctx.fillStyle = theme.exit;
                 this.ctx.fillRect(this.exit.x * this.tileSize, this.exit.y * this.tileSize, this.tileSize, this.tileSize);
-                this.ctx.strokeStyle = '#fff';
+                this.ctx.shadowBlur = 0;
+                this.ctx.strokeStyle = theme.exitBorder;
                 this.ctx.strokeRect(this.exit.x * this.tileSize, this.exit.y * this.tileSize, this.tileSize, this.tileSize);
 
-                // Draw Player
-                this.ctx.fillStyle = '#fff';
+                // Draw Player with glow effect
+                this.ctx.shadowColor = theme.player;
+                this.ctx.shadowBlur = 8;
+                this.ctx.fillStyle = theme.player;
                 this.ctx.fillRect(this.player.x * this.tileSize, this.player.y * this.tileSize, this.tileSize, this.tileSize);
+                this.ctx.shadowBlur = 0;
                 
                 // Add "Eyes" to player
-                this.ctx.fillStyle = '#000';
+                this.ctx.fillStyle = theme.playerEyes;
                 this.ctx.fillRect(this.player.x * this.tileSize + 5, this.player.y * this.tileSize + 5, 3, 3);
                 this.ctx.fillRect(this.player.x * this.tileSize + 12, this.player.y * this.tileSize + 5, 3, 3);
             }

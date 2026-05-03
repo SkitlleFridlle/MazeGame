@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Countdown</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f4f8; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .container { background: #fff; padding: 2rem 3rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { color: #2d6cdf; }
+        label, input, button { font-size: 1.1rem; }
+        input[type="date"] { padding: 0.3rem; margin: 0.5rem 0; }
+        button { background: #2d6cdf; color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #1a4e8a; }
+        .result { margin-top: 1.5rem; font-size: 1.2rem; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Birthday Countdown</h1>
+        <form id="birthdayForm">
+            <label for="birthday">Enter your birthday:</label><br>
+            <input type="date" id="birthday" name="birthday" required><br>
+            <button type="submit">Calculate Days</button>
+        </form>
+        <div class="result" id="result"></div>
+        <div class="result" id="liveCountdown"></div>
+    </div>
+    <script>
+        let countdownInterval;
+        document.getElementById('birthdayForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('birthday').value;
+            if (!input) return;
+            const today = new Date();
+            const birthDate = new Date(input);
+            let nextBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+            if (nextBirthday < today.setHours(0,0,0,0)) {
+                nextBirthday = new Date(today.getFullYear() + 1, birthDate.getMonth(), birthDate.getDate());
+            }
+            clearInterval(countdownInterval);
+            function updateCountdown() {
+                const now = new Date();
+                let distance = nextBirthday - now;
+                if (distance <= 0) {
+                    document.getElementById('result').textContent = "Happy Birthday! 🎉";
+                    document.getElementById('liveCountdown').textContent = '';
+                    clearInterval(countdownInterval);
+                    return;
+                }
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                document.getElementById('result').textContent = `Time left until your next birthday:`;
+                document.getElementById('liveCountdown').textContent = `${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+            }
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        });
+    </script>
+</body>
+</html>
