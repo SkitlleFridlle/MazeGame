@@ -3,200 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maze RPG: Level 1</title>
+    <title>Maze RPG - Main Menu</title>
     <style>
-        /* CSS STYLES */
-        body {
+        /* ===== BASE STYLES ===== */
+        * {
             margin: 0;
             padding: 0;
-            background-color: #1a1a1a;
-            color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        body {
             font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             overflow: hidden;
-            touch-action: none; /* Prevent scrolling on mobile */
+            transition: all 0.5s ease;
         }
 
-        #game-container {
-            position: relative;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            border: 2px solid #333;
-            width: 100%;
-            max-width: 640px;
-            aspect-ratio: 4 / 3;
-        }
-
-        canvas {
-            display: block;
-            background-color: #000;
-            width: 100%;
-            height: 100%;
-            touch-action: none;
-        }
-
-        #ui-layer {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            pointer-events: none;
-            text-shadow: 1px 1px 2px black;
-            font-size: clamp(12px, 2vw, 16px);
-        }
-
-        #hud {
-            font-size: clamp(12px, 2vw, 16px);
-            margin-bottom: 5px;
-        }
-
-        #controls {
-            position: absolute;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            font-size: clamp(10px, 1.5vw, 12px);
-            color: #888;
-            pointer-events: none;
-            display: none; /* Hide keyboard controls on mobile */
-        }
-
-        /* Mobile Controls */
-        #mobile-controls {
-            position: absolute;
-            bottom: 20px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-sizing: border-box;
-            pointer-events: none;
-        }
-
-        .control-group {
-            pointer-events: auto;
-            display: flex;
-            gap: 10px;
-        }
-
-        .control-btn {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+        /* ===== STYLE SELECTOR ===== */
+        #style-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
-            color: white;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-            backdrop-filter: blur(5px);
-        }
-
-        .control-btn:active {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0.95);
-        }
-
-        .arrow-up {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        /* Hide mobile controls on desktop */
-        @media (min-width: 768px) {
-            #mobile-controls {
-                display: none;
-            }
-            #controls {
-                display: block;
-            }
-        }
-
-        #game-over-screen, #level-complete-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            display: none;
-        }
-
-        /* Back to Menu Button */
-        #menu-btn {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 8px 20px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            border-radius: 20px;
-            color: white;
-            font-family: inherit;
-            font-size: 14px;
             cursor: pointer;
-            z-index: 20;
-            pointer-events: auto;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-
-        #menu-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateX(-50%) scale(1.05);
-        }
-
-        /* Style Selector Button */
-        #style-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            cursor: pointer;
-            z-index: 20;
-            pointer-events: auto;
+            z-index: 100;
             backdrop-filter: blur(5px);
             transition: all 0.3s ease;
         }
 
         #style-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
             transform: scale(1.1);
         }
 
-        /* Style Selector Dropdown */
         #style-dropdown {
-            position: absolute;
-            top: 55px;
-            right: 10px;
+            position: fixed;
+            top: 80px;
+            right: 20px;
             background: rgba(0, 0, 0, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             padding: 10px;
-            z-index: 20;
+            z-index: 100;
             display: none;
             backdrop-filter: blur(10px);
             min-width: 150px;
@@ -212,6 +71,7 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
+            color: white;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
@@ -234,468 +94,438 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* Style Previews */
         .preview-bw { background: linear-gradient(135deg, #000 50%, #fff 50%); }
         .preview-galaxy { background: linear-gradient(135deg, #1a0033, #001133, #003322); }
         .preview-colorful { background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1); }
 
-        h1 { margin: 0 0 10px 0; color: #fff; }
-        p { margin: 0 0 20px 0; color: #ccc; }
-        
-        button {
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            padding: 10px 20px;
-            font-family: inherit;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.2s;
+        /* ===== TITLE ===== */
+        .game-title {
+            font-size: clamp(40px, 8vw, 80px);
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            transition: all 0.5s ease;
         }
-        button:hover { background: #555; }
+
+        .game-subtitle {
+            font-size: clamp(14px, 2vw, 20px);
+            margin-bottom: 60px;
+            letter-spacing: 3px;
+            transition: all 0.5s ease;
+        }
+
+        /* ===== BUTTONS CONTAINER ===== */
+        .buttons-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== BUTTONS ===== */
+        .menu-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+
+        .menu-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .menu-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .btn-text {
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Button label above */
+        .btn-label {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            white-space: nowrap;
+            transition: all 0.5s ease;
+        }
+
+        /* ===== PLAY BUTTON (Center - Larger) ===== */
+        .menu-btn.play-btn {
+            width: 250px;
+            height: 250px;
+            order: 2;
+        }
+
+        /* ===== DUELS BUTTON (Left) ===== */
+        .menu-btn.duels-btn {
+            order: 1;
+        }
+
+        /* ===== TUTORIAL BUTTON (Right) ===== */
+        .menu-btn.tutorial-btn {
+            order: 3;
+        }
+
+        /* ===== BLACK & WHITE THEME ===== */
+        body.theme-bw {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #ffffff;
+        }
+
+        body.theme-bw .game-title {
+            color: #ffffff;
+            text-shadow: 3px 3px 0 #333, 6px 6px 0 #000;
+        }
+
+        body.theme-bw .game-subtitle {
+            color: #cccccc;
+        }
+
+        body.theme-bw .menu-btn.play-btn {
+            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            color: #000000;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-bw .menu-btn.duels-btn,
+        body.theme-bw .menu-btn.tutorial-btn {
+            background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
+            color: #ffffff;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid #444;
+        }
+
+        body.theme-bw .btn-label {
+            color: #ffffff;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        body.theme-bw .menu-btn.play-btn:hover {
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-bw .menu-btn.duels-btn:hover,
+        body.theme-bw .menu-btn.tutorial-btn:hover {
+            background: linear-gradient(135deg, #444444 0%, #2a2a2a 100%);
+            border-color: #666;
+        }
+
+        /* ===== GALAXY THEME ===== */
+        body.theme-galaxy {
+            background: linear-gradient(135deg, #0a0015 0%, #1a0033 30%, #001133 60%, #003322 100%);
+            color: #e0e0ff;
+        }
+
+        body.theme-galaxy::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
+                radial-gradient(2px 2px at 40px 70px, #ffffff, transparent),
+                radial-gradient(1px 1px at 90px 40px, #ffffff, transparent),
+                radial-gradient(2px 2px at 160px 120px, #ffffff, transparent),
+                radial-gradient(1px 1px at 230px 80px, #ffffff, transparent),
+                radial-gradient(2px 2px at 300px 200px, #ffffff, transparent),
+                radial-gradient(1px 1px at 400px 150px, #ffffff, transparent),
+                radial-gradient(2px 2px at 500px 250px, #ffffff, transparent);
+            background-repeat: repeat;
+            background-size: 500px 500px;
+            animation: twinkle 5s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        body.theme-galaxy .game-title {
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-galaxy .game-subtitle {
+            color: #c0c0ff;
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-galaxy .menu-btn.play-btn {
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 50%, #ffd700 100%);
+            color: #1a0033;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.4), 0 10px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-galaxy .menu-btn.duels-btn,
+        body.theme-galaxy .menu-btn.tutorial-btn {
+            background: linear-gradient(135deg, #2a0050 0%, #1a0033 50%, #001133 100%);
+            color: #e0e0ff;
+            box-shadow: 0 0 20px rgba(100, 50, 200, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(150, 100, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-galaxy .btn-label {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        body.theme-galaxy .menu-btn.duels-btn .btn-label,
+        body.theme-galaxy .menu-btn.tutorial-btn .btn-label {
+            color: #c0c0ff;
+            text-shadow: 0 0 10px rgba(150, 100, 255, 0.5);
+        }
+
+        body.theme-galaxy .menu-btn.play-btn:hover {
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.6), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-galaxy .menu-btn.duels-btn:hover,
+        body.theme-galaxy .menu-btn.tutorial-btn:hover {
+            border-color: rgba(150, 100, 255, 0.6);
+            box-shadow: 0 0 30px rgba(100, 50, 200, 0.5), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ===== COLORFUL THEME ===== */
+        body.theme-colorful {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #1a1a2e 100%);
+            color: #ffffff;
+        }
+
+        body.theme-colorful::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(233, 69, 96, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 30% 70%, rgba(78, 205, 196, 0.1) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 30%, rgba(69, 183, 209, 0.1) 0%, transparent 40%);
+            animation: colorfulShift 10s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes colorfulShift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        body.theme-colorful .game-title {
+            background: linear-gradient(90deg, #e94560, #4ecdc4, #45b7d1, #e94560);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 5s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        body.theme-colorful .game-subtitle {
+            color: #4ecdc4;
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-colorful .menu-btn.play-btn {
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 50%, #e94560 100%);
+            color: #ffffff;
+            box-shadow: 0 0 40px rgba(233, 69, 96, 0.4), 0 10px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-colorful .menu-btn.duels-btn {
+            background: linear-gradient(135deg, #45b7d1 0%, #4ecdc4 50%, #45b7d1 100%);
+            color: #ffffff;
+            box-shadow: 0 0 30px rgba(69, 183, 209, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-colorful .menu-btn.tutorial-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #4ecdc4 100%);
+            color: #ffffff;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(233, 69, 96, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-colorful .btn-label {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        body.theme-colorful .menu-btn.play-btn:hover {
+            box-shadow: 0 0 60px rgba(233, 69, 96, 0.6), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-colorful .menu-btn.duels-btn:hover {
+            border-color: rgba(78, 205, 196, 0.6);
+            box-shadow: 0 0 40px rgba(69, 183, 209, 0.5), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-colorful .menu-btn.tutorial-btn:hover {
+            border-color: rgba(233, 69, 96, 0.6);
+            box-shadow: 0 0 40px rgba(78, 205, 196, 0.5), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .buttons-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .menu-btn {
+                width: 180px;
+                height: 180px;
+            }
+
+            .menu-btn.play-btn {
+                width: 220px;
+                height: 220px;
+            }
+
+            .menu-btn.play-btn,
+            .menu-btn.duels-btn,
+            .menu-btn.tutorial-btn {
+                order: unset;
+            }
+        }
     </style>
 </head>
-<body>
-
-    <div id="game-container">
-        <!-- Back to Menu Button -->
-        <a href="main-menu.html" id="menu-btn">← Menu</a>
-
-        <div id="ui-layer">
-            <div id="hud">Level: <span id="level-display">1</span> | Time: <span id="time-display">0</span>s</div>
+<body class="theme-bw">
+    <!-- Style Selector -->
+    <button id="style-btn" title="Change Style">🎨</button>
+    
+    <div id="style-dropdown">
+        <div class="style-option active" data-style="bw" onclick="setStyle('bw')">
+            <span class="preview preview-bw"></span>
+            <span>Black & White</span>
         </div>
-        
-        <canvas id="gameCanvas" width="640" height="480"></canvas>
-
-        <div id="controls">
-            Controls: Arrow Keys or WASD to Move
+        <div class="style-option" data-style="galaxy" onclick="setStyle('galaxy')">
+            <span class="preview preview-galaxy"></span>
+            <span>Galaxy</span>
         </div>
-
-        <!-- Mobile Touch Controls -->
-        <div id="mobile-controls">
-            <div class="control-group">
-                <div class="control-btn" id="btn-left">←</div>
-                <div class="control-btn" id="btn-down">↓</div>
-                <div class="control-btn" id="btn-up">↑</div>
-                <div class="control-btn" id="btn-right">→</div>
-            </div>
-        </div>
-
-        <div id="game-over-screen">
-            <h1>GAME OVER</h1>
-            <p>You hit a wall or fell into a pit.</p>
-            <button onclick="game.resetGame()">Try Again</button>
-        </div>
-
-        <div id="level-complete-screen">
-            <h1>LEVEL COMPLETE!</h1>
-            <p>Time: <span id="final-time">0</span>s</p>
-            <button onclick="game.nextLevel()">Next Level</button>
-        </div>
-
-        <!-- Style Selector Button -->
-        <button id="style-btn" title="Change Style">🎨</button>
-
-        <!-- Style Selector Dropdown -->
-        <div id="style-dropdown">
-            <div class="style-option active" data-style="bw" onclick="game.setStyle('bw')">
-                <span class="preview preview-bw"></span>
-                <span>Black & White</span>
-            </div>
-            <div class="style-option" data-style="galaxy" onclick="game.setStyle('galaxy')">
-                <span class="preview preview-galaxy"></span>
-                <span>Galaxy</span>
-            </div>
-            <div class="style-option" data-style="colorful" onclick="game.setStyle('colorful')">
-                <span class="preview preview-colorful"></span>
-                <span>Colorful</span>
-            </div>
+        <div class="style-option" data-style="colorful" onclick="setStyle('colorful')">
+            <span class="preview preview-colorful"></span>
+            <span>Colorful</span>
         </div>
     </div>
 
+    <!-- Title -->
+    <h1 class="game-title">Maze RPG</h1>
+    <p class="game-subtitle">Navigate the labyrinth. Find your way out.</p>
+
+    <!-- Buttons -->
+    <div class="buttons-container">
+        <!-- Duels Button (Left) -->
+        <a href="duels.html" class="menu-btn duels-btn">
+            <span class="btn-label">Duels</span>
+            <span class="btn-icon">⚔️</span>
+            <span class="btn-text">Duels</span>
+        </a>
+
+        <!-- Play Button (Center) -->
+        <a href="game.html" class="menu-btn play-btn">
+            <span class="btn-label">Play</span>
+            <span class="btn-icon">🎮</span>
+            <span class="btn-text">Play</span>
+        </a>
+
+        <!-- Tutorial Button (Right) -->
+        <a href="tutorial.html" class="menu-btn tutorial-btn">
+            <span class="btn-label">Tutorial</span>
+            <span class="btn-icon">📖</span>
+            <span class="btn-text">Tutorial</span>
+        </a>
+    </div>
+
     <script>
-        /**
-         * GAME DESIGN SUMMARY
-         * 
-         * This is a minimalist 2D top-down maze RPG.
-         * The player is a white square navigating a black-and-white pixel maze.
-         * The goal is to reach the green exit tile.
-         * 
-         * Core Systems:
-         * 1. Grid-based movement (4 directions)
-         * 2. Procedurally generated mazes using a simple algorithm
-         * 3. Collision detection against walls (black pixels)
-         * 4. Level progression (1 to 100)
-         * 5. Timer and HUD
-         */
+        // Current style (saved to localStorage)
+        let currentStyle = localStorage.getItem('mazeRPGStyle') || 'bw';
 
-        // Style Themes Configuration
-        const STYLE_THEMES = {
-            bw: {
-                name: 'Black & White',
-                background: '#000000',
-                wall: '#000000',
-                wallBorder: '#111111',
-                path: '#111111',
-                exit: '#00ff00',
-                exitBorder: '#ffffff',
-                player: '#ffffff',
-                playerEyes: '#000000',
-                hudShadow: '1px 1px 2px black'
-            },
-            galaxy: {
-                name: 'Galaxy',
-                background: '#0a0015',
-                wall: '#1a0033',
-                wallBorder: '#2a0050',
-                path: '#0d0020',
-                exit: '#ffd700',
-                exitBorder: '#ffaa00',
-                player: '#e0e0ff',
-                playerEyes: '#4400aa',
-                hudShadow: '0 0 10px rgba(150, 100, 255, 0.5)'
-            },
-            colorful: {
-                name: 'Colorful',
-                background: '#1a1a2e',
-                wall: '#16213e',
-                wallBorder: '#0f3460',
-                path: '#1a1a2e',
-                exit: '#e94560',
-                exitBorder: '#ff6b6b',
-                player: '#4ecdc4',
-                playerEyes: '#1a1a2e',
-                hudShadow: '0 0 10px rgba(78, 205, 196, 0.5)'
+        // Apply saved style on load
+        document.body.className = 'theme-' + currentStyle;
+        updateActiveStyle(currentStyle);
+
+        // Style selector button
+        const styleBtn = document.getElementById('style-btn');
+        const styleDropdown = document.getElementById('style-dropdown');
+
+        styleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            styleDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!styleDropdown.contains(e.target) && e.target !== styleBtn) {
+                styleDropdown.classList.remove('show');
             }
-        };
+        });
 
-        class Game {
-            constructor() {
-                this.canvas = document.getElementById('gameCanvas');
-                this.ctx = this.canvas.getContext('2d');
-                
-                // Game State
-                this.level = 1;
-                this.score = 0;
-                this.startTime = Date.now();
-                this.isGameOver = false;
-                this.isLevelComplete = false;
-
-                // Grid Settings
-                this.tileSize = 20;
-                this.grid = [];
-                this.player = { x: 1, y: 1 };
-                this.exit = { x: 0, y: 0 };
-
-                // Current Style Theme
-                this.currentStyle = 'bw';
-
-                // DOM Elements
-                this.levelDisplay = document.getElementById('level-display');
-                this.timeDisplay = document.getElementById('time-display');
-                this.finalTimeDisplay = document.getElementById('final-time');
-                this.gameOverScreen = document.getElementById('game-over-screen');
-                this.levelCompleteScreen = document.getElementById('level-complete-screen');
-                this.styleBtn = document.getElementById('style-btn');
-                this.styleDropdown = document.getElementById('style-dropdown');
-
-                // Setup style selector
-                this.setupStyleSelector();
-
-                // Input Handling
-                this.keys = {};
-                window.addEventListener('keydown', (e) => this.keys[e.key] = true);
-                window.addEventListener('keyup', (e) => this.keys[e.key] = false);
-
-                // Mobile Touch Controls
-                this.setupTouchControls();
-
-                // Start Game
-                this.init();
-            }
-
-            // --- STYLE SELECTOR ---
-            setupStyleSelector() {
-                // Toggle dropdown on button click
-                this.styleBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.styleDropdown.classList.toggle('show');
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!this.styleDropdown.contains(e.target) && e.target !== this.styleBtn) {
-                        this.styleDropdown.classList.remove('show');
-                    }
-                });
-            }
-
-            setStyle(styleName) {
-                if (!STYLE_THEMES[styleName]) return;
-                
-                this.currentStyle = styleName;
-                
-                // Update active state in dropdown
-                document.querySelectorAll('.style-option').forEach(option => {
-                    option.classList.toggle('active', option.dataset.style === styleName);
-                });
-
-                // Close dropdown
-                this.styleDropdown.classList.remove('show');
-
-                // Update HUD text shadow
-                const hud = document.getElementById('hud');
-                hud.style.textShadow = STYLE_THEMES[styleName].hudShadow;
-
-                // Redraw immediately
-                this.draw();
-            }
-
-            init() {
-                this.level = 1;
-                this.resetLevel();
-                this.gameLoop();
-            }
-
-            resetGame() {
-                this.level = 1;
-                this.resetLevel();
-                this.gameOverScreen.style.display = 'none';
-                this.isGameOver = false;
-            }
-
-            resetLevel() {
-                this.isLevelComplete = false;
-                this.levelCompleteScreen.style.display = 'none';
-                this.startTime = Date.now();
-                this.generateMaze();
-                this.updateHUD();
-            }
-
-            nextLevel() {
-                this.level++;
-                if (this.level > 100) {
-                    alert("Congratulations! You've completed all 100 levels!");
-                    this.level = 1;
-                }
-                this.resetLevel();
-            }
-
-            // --- MAZE GENERATION ---
-            // Simple Recursive Backtracker Algorithm
-            generateMaze() {
-                const width = Math.floor(this.canvas.width / this.tileSize);
-                const height = Math.floor(this.canvas.height / this.tileSize);
-
-                // Initialize grid (0 = wall, 1 = path)
-                this.grid = Array.from({ length: height }, () => Array(width).fill(0));
-
-                // Start carving from (1,1)
-                this.carve(1, 1);
-
-                // Place Player and Exit
-                this.player.x = 1;
-                this.player.y = 1;
-
-                // Find a random path tile for the exit (not too close to start)
-                let exitFound = false;
-                while (!exitFound) {
-                    const ex = Math.floor(Math.random() * (width - 2)) + 1;
-                    const ey = Math.floor(Math.random() * (height - 2)) + 1;
-                    if (this.grid[ey][ex] === 1 && (ex > width/2 || ey > height/2)) {
-                        this.exit.x = ex;
-                        this.exit.y = ey;
-                        exitFound = true;
-                    }
-                }
-            }
-
-            carve(x, y) {
-                const dirs = [[0, -2], [2, 0], [0, 2], [-2, 0]];
-                // Shuffle directions
-                for (let i = dirs.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
-                }
-
-                this.grid[y][x] = 1; // Mark as path
-
-                for (let [dx, dy] of dirs) {
-                    const nx = x + dx;
-                    const ny = y + dy;
-                    const mx = x + dx/2;
-                    const my = y + dy/2;
-
-                    if (nx > 0 && nx < this.grid[0].length - 1 && 
-                        ny > 0 && ny < this.grid.length - 1 && 
-                        this.grid[ny][nx] === 0) {
-                        
-                        this.grid[my][mx] = 1; // Carve passage
-                        this.carve(nx, ny);
-                    }
-                }
-            }
-
-            // --- GAME LOGIC ---
-            update() {
-                if (this.isGameOver || this.isLevelComplete) return;
-
-                const speed = 1;
-                let dx = 0, dy = 0;
-
-                // Input
-                if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) dy = -speed;
-                if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) dy = speed;
-                if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) dx = -speed;
-                if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) dx = speed;
-
-                if (dx !== 0 || dy !== 0) {
-                    this.movePlayer(dx, dy);
-                }
-
-                this.updateHUD();
-            }
-
-            movePlayer(dx, dy) {
-                const newX = this.player.x + dx;
-                const newY = this.player.y + dy;
-
-                // Boundary Check
-                if (newX < 0 || newX >= this.grid[0].length || 
-                    newY < 0 || newY >= this.grid.length) {
-                    return;
-                }
-
-                // Wall Collision Check (Grid-based)
-                // We check the tile the player is trying to move into
-                const targetTile = this.grid[Math.floor(newY)][Math.floor(newX)];
-                
-                // If it's a wall (0), don't move
-                if (targetTile === 0) {
-                    return;
-                }
-
-                // Move
-                this.player.x = newX;
-                this.player.y = newY;
-
-                // Check Win Condition
-                if (Math.floor(this.player.x) === this.exit.x && 
-                    Math.floor(this.player.y) === this.exit.y) {
-                    this.completeLevel();
-                }
-            }
-
-            completeLevel() {
-                this.isLevelComplete = true;
-                this.levelCompleteScreen.style.display = 'flex';
-                const time = Math.floor((Date.now() - this.startTime) / 1000);
-                this.finalTimeDisplay.innerText = time;
-            }
-
-            updateHUD() {
-                this.levelDisplay.innerText = this.level;
-                const time = Math.floor((Date.now() - this.startTime) / 1000);
-                this.timeDisplay.innerText = time;
-            }
-
-            // --- RENDERING ---
-            draw() {
-                const theme = STYLE_THEMES[this.currentStyle];
-
-                // Clear Screen with background color
-                this.ctx.fillStyle = theme.background;
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-                // Draw Grid
-                for (let y = 0; y < this.grid.length; y++) {
-                    for (let x = 0; x < this.grid[y].length; x++) {
-                        if (this.grid[y][x] === 0) {
-                            // Wall
-                            this.ctx.fillStyle = theme.wall;
-                            this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
-                            // Add pixel border for style
-                            this.ctx.strokeStyle = theme.wallBorder;
-                            this.ctx.strokeRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
-                        } else {
-                            // Path
-                            this.ctx.fillStyle = theme.path;
-                            this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
-                        }
-                    }
-                }
-
-                // Draw Exit with glow effect
-                this.ctx.shadowColor = theme.exit;
-                this.ctx.shadowBlur = 10;
-                this.ctx.fillStyle = theme.exit;
-                this.ctx.fillRect(this.exit.x * this.tileSize, this.exit.y * this.tileSize, this.tileSize, this.tileSize);
-                this.ctx.shadowBlur = 0;
-                this.ctx.strokeStyle = theme.exitBorder;
-                this.ctx.strokeRect(this.exit.x * this.tileSize, this.exit.y * this.tileSize, this.tileSize, this.tileSize);
-
-                // Draw Player with glow effect
-                this.ctx.shadowColor = theme.player;
-                this.ctx.shadowBlur = 8;
-                this.ctx.fillStyle = theme.player;
-                this.ctx.fillRect(this.player.x * this.tileSize, this.player.y * this.tileSize, this.tileSize, this.tileSize);
-                this.ctx.shadowBlur = 0;
-                
-                // Add "Eyes" to player
-                this.ctx.fillStyle = theme.playerEyes;
-                this.ctx.fillRect(this.player.x * this.tileSize + 5, this.player.y * this.tileSize + 5, 3, 3);
-                this.ctx.fillRect(this.player.x * this.tileSize + 12, this.player.y * this.tileSize + 5, 3, 3);
-            }
-
-            // --- MOBILE TOUCH CONTROLS ---
-            setupTouchControls() {
-                const btnUp = document.getElementById('btn-up');
-                const btnDown = document.getElementById('btn-down');
-                const btnLeft = document.getElementById('btn-left');
-                const btnRight = document.getElementById('btn-right');
-
-                // Helper to add touch events to a button
-                const addTouchEvents = (btn, key) => {
-                    btn.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        this.keys[key] = true;
-                    });
-                    btn.addEventListener('touchend', (e) => {
-                        e.preventDefault();
-                        this.keys[key] = false;
-                    });
-                    btn.addEventListener('touchcancel', (e) => {
-                        e.preventDefault();
-                        this.keys[key] = false;
-                    });
-                    // Also support mouse for testing on desktop
-                    btn.addEventListener('mousedown', (e) => {
-                        this.keys[key] = true;
-                    });
-                    btn.addEventListener('mouseup', (e) => {
-                        this.keys[key] = false;
-                    });
-                    btn.addEventListener('mouseleave', (e) => {
-                        this.keys[key] = false;
-                    });
-                };
-
-                addTouchEvents(btnUp, 'ArrowUp');
-                addTouchEvents(btnDown, 'ArrowDown');
-                addTouchEvents(btnLeft, 'ArrowLeft');
-                addTouchEvents(btnRight, 'ArrowRight');
-            }
-
-            gameLoop() {
-                this.update();
-                this.draw();
-                requestAnimationFrame(() => this.gameLoop());
-            }
+        // Set style function
+        function setStyle(styleName) {
+            currentStyle = styleName;
+            document.body.className = 'theme-' + styleName;
+            localStorage.setItem('mazeRPGStyle', styleName);
+            styleDropdown.classList.remove('show');
+            updateActiveStyle(styleName);
         }
 
-        // Start the game when the page loads
-        const game = new Game();
-
+        // Update active state in dropdown
+        function updateActiveStyle(styleName) {
+            document.querySelectorAll('.style-option').forEach(option => {
+                option.classList.toggle('active', option.dataset.style === styleName);
+            });
+        }
     </script>
 </body>
 </html>
