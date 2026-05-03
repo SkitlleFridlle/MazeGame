@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze RPG - Main Menu</title>
+    <style>
+        /* ===== BASE STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        /* ===== STYLE SELECTOR ===== */
+        #style-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        #style-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #style-dropdown {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 100;
+            display: none;
+            backdrop-filter: blur(10px);
+            min-width: 150px;
+        }
+
+        #style-dropdown.show {
+            display: block;
+        }
+
+        .style-option {
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid transparent;
+        }
+
+        .style-option:hover {
+            transform: translateX(3px);
+        }
+
+        .style-option.active {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .style-option .preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .preview-bw { background: linear-gradient(135deg, #000 50%, #fff 50%); }
+        .preview-galaxy { background: linear-gradient(135deg, #1a0033, #001133, #003322); }
+        .preview-colorful { background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1); }
+
+        /* ===== TITLE ===== */
+        .game-title {
+            font-size: clamp(40px, 8vw, 80px);
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            transition: all 0.5s ease;
+        }
+
+        .game-subtitle {
+            font-size: clamp(14px, 2vw, 20px);
+            margin-bottom: 60px;
+            letter-spacing: 3px;
+            transition: all 0.5s ease;
+        }
+
+        /* ===== BUTTONS CONTAINER ===== */
+        .buttons-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        /* ===== BUTTONS ===== */
+        .menu-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+
+        .menu-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .menu-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .btn-text {
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Button label above */
+        .btn-label {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            white-space: nowrap;
+            transition: all 0.5s ease;
+        }
+
+        /* ===== PLAY BUTTON (Center - Larger) ===== */
+        .menu-btn.play-btn {
+            width: 250px;
+            height: 250px;
+            order: 2;
+        }
+
+        /* ===== DUELS BUTTON (Left) ===== */
+        .menu-btn.duels-btn {
+            order: 1;
+        }
+
+        /* ===== TUTORIAL BUTTON (Right) ===== */
+        .menu-btn.tutorial-btn {
+            order: 3;
+        }
+
+        /* ===== BLACK & WHITE THEME ===== */
+        body.theme-bw {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            color: #ffffff;
+        }
+
+        body.theme-bw .game-title {
+            color: #ffffff;
+            text-shadow: 3px 3px 0 #333, 6px 6px 0 #000;
+        }
+
+        body.theme-bw .game-subtitle {
+            color: #cccccc;
+        }
+
+        body.theme-bw .menu-btn.play-btn {
+            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            color: #000000;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-bw .menu-btn.duels-btn,
+        body.theme-bw .menu-btn.tutorial-btn {
+            background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
+            color: #ffffff;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid #444;
+        }
+
+        body.theme-bw .btn-label {
+            color: #ffffff;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        body.theme-bw .menu-btn.play-btn:hover {
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.5), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-bw .menu-btn.duels-btn:hover,
+        body.theme-bw .menu-btn.tutorial-btn:hover {
+            background: linear-gradient(135deg, #444444 0%, #2a2a2a 100%);
+            border-color: #666;
+        }
+
+        /* ===== GALAXY THEME ===== */
+        body.theme-galaxy {
+            background: linear-gradient(135deg, #0a0015 0%, #1a0033 30%, #001133 60%, #003322 100%);
+            color: #e0e0ff;
+        }
+
+        body.theme-galaxy::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
+                radial-gradient(2px 2px at 40px 70px, #ffffff, transparent),
+                radial-gradient(1px 1px at 90px 40px, #ffffff, transparent),
+                radial-gradient(2px 2px at 160px 120px, #ffffff, transparent),
+                radial-gradient(1px 1px at 230px 80px, #ffffff, transparent),
+                radial-gradient(2px 2px at 300px 200px, #ffffff, transparent),
+                radial-gradient(1px 1px at 400px 150px, #ffffff, transparent),
+                radial-gradient(2px 2px at 500px 250px, #ffffff, transparent);
+            background-repeat: repeat;
+            background-size: 500px 500px;
+            animation: twinkle 5s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        body.theme-galaxy .game-title {
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-galaxy .game-subtitle {
+            color: #c0c0ff;
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-galaxy .menu-btn.play-btn {
+            background: linear-gradient(135deg, #ffd700 0%, #ffaa00 50%, #ffd700 100%);
+            color: #1a0033;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.4), 0 10px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-galaxy .menu-btn.duels-btn,
+        body.theme-galaxy .menu-btn.tutorial-btn {
+            background: linear-gradient(135deg, #2a0050 0%, #1a0033 50%, #001133 100%);
+            color: #e0e0ff;
+            box-shadow: 0 0 20px rgba(100, 50, 200, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(150, 100, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-galaxy .btn-label {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        body.theme-galaxy .menu-btn.duels-btn .btn-label,
+        body.theme-galaxy .menu-btn.tutorial-btn .btn-label {
+            color: #c0c0ff;
+            text-shadow: 0 0 10px rgba(150, 100, 255, 0.5);
+        }
+
+        body.theme-galaxy .menu-btn.play-btn:hover {
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.6), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-galaxy .menu-btn.duels-btn:hover,
+        body.theme-galaxy .menu-btn.tutorial-btn:hover {
+            border-color: rgba(150, 100, 255, 0.6);
+            box-shadow: 0 0 30px rgba(100, 50, 200, 0.5), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ===== COLORFUL THEME ===== */
+        body.theme-colorful {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #1a1a2e 100%);
+            color: #ffffff;
+        }
+
+        body.theme-colorful::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(233, 69, 96, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 30% 70%, rgba(78, 205, 196, 0.1) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 30%, rgba(69, 183, 209, 0.1) 0%, transparent 40%);
+            animation: colorfulShift 10s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes colorfulShift {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        body.theme-colorful .game-title {
+            background: linear-gradient(90deg, #e94560, #4ecdc4, #45b7d1, #e94560);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 5s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        body.theme-colorful .game-subtitle {
+            color: #4ecdc4;
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-colorful .menu-btn.play-btn {
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 50%, #e94560 100%);
+            color: #ffffff;
+            box-shadow: 0 0 40px rgba(233, 69, 96, 0.4), 0 10px 40px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-colorful .menu-btn.duels-btn {
+            background: linear-gradient(135deg, #45b7d1 0%, #4ecdc4 50%, #45b7d1 100%);
+            color: #ffffff;
+            box-shadow: 0 0 30px rgba(69, 183, 209, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(78, 205, 196, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-colorful .menu-btn.tutorial-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #45b7d1 50%, #4ecdc4 100%);
+            color: #ffffff;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.3), 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(233, 69, 96, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        body.theme-colorful .btn-label {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        body.theme-colorful .menu-btn.play-btn:hover {
+            box-shadow: 0 0 60px rgba(233, 69, 96, 0.6), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-colorful .menu-btn.duels-btn:hover {
+            border-color: rgba(78, 205, 196, 0.6);
+            box-shadow: 0 0 40px rgba(69, 183, 209, 0.5), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-colorful .menu-btn.tutorial-btn:hover {
+            border-color: rgba(233, 69, 96, 0.6);
+            box-shadow: 0 0 40px rgba(78, 205, 196, 0.5), 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .buttons-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .menu-btn {
+                width: 180px;
+                height: 180px;
+            }
+
+            .menu-btn.play-btn {
+                width: 220px;
+                height: 220px;
+            }
+
+            .menu-btn.play-btn,
+            .menu-btn.duels-btn,
+            .menu-btn.tutorial-btn {
+                order: unset;
+            }
+        }
+    </style>
+</head>
+<body class="theme-bw">
+    <!-- Style Selector -->
+    <button id="style-btn" title="Change Style">🎨</button>
+    
+    <div id="style-dropdown">
+        <div class="style-option active" data-style="bw" onclick="setStyle('bw')">
+            <span class="preview preview-bw"></span>
+            <span>Black & White</span>
+        </div>
+        <div class="style-option" data-style="galaxy" onclick="setStyle('galaxy')">
+            <span class="preview preview-galaxy"></span>
+            <span>Galaxy</span>
+        </div>
+        <div class="style-option" data-style="colorful" onclick="setStyle('colorful')">
+            <span class="preview preview-colorful"></span>
+            <span>Colorful</span>
+        </div>
+    </div>
+
+    <!-- Title -->
+    <h1 class="game-title">Maze RPG</h1>
+    <p class="game-subtitle">Navigate the labyrinth. Find your way out.</p>
+
+    <!-- Buttons -->
+    <div class="buttons-container">
+        <!-- Duels Button (Left) -->
+        <a href="duels.html" class="menu-btn duels-btn">
+            <span class="btn-label">Duels</span>
+            <span class="btn-icon">⚔️</span>
+            <span class="btn-text">Duels</span>
+        </a>
+
+        <!-- Play Button (Center) -->
+        <a href="index.html" class="menu-btn play-btn">
+            <span class="btn-label">Play</span>
+            <span class="btn-icon">🎮</span>
+            <span class="btn-text">Play</span>
+        </a>
+
+        <!-- Tutorial Button (Right) -->
+        <a href="tutorial.html" class="menu-btn tutorial-btn">
+            <span class="btn-label">Tutorial</span>
+            <span class="btn-icon">📖</span>
+            <span class="btn-text">Tutorial</span>
+        </a>
+    </div>
+
+    <script>
+        // Current style (saved to localStorage)
+        let currentStyle = localStorage.getItem('mazeRPGStyle') || 'bw';
+
+        // Apply saved style on load
+        document.body.className = 'theme-' + currentStyle;
+        updateActiveStyle(currentStyle);
+
+        // Style selector button
+        const styleBtn = document.getElementById('style-btn');
+        const styleDropdown = document.getElementById('style-dropdown');
+
+        styleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            styleDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!styleDropdown.contains(e.target) && e.target !== styleBtn) {
+                styleDropdown.classList.remove('show');
+            }
+        });
+
+        // Set style function
+        function setStyle(styleName) {
+            currentStyle = styleName;
+            document.body.className = 'theme-' + styleName;
+            localStorage.setItem('mazeRPGStyle', styleName);
+            styleDropdown.classList.remove('show');
+            updateActiveStyle(styleName);
+        }
+
+        // Update active state in dropdown
+        function updateActiveStyle(styleName) {
+            document.querySelectorAll('.style-option').forEach(option => {
+                option.classList.toggle('active', option.dataset.style === styleName);
+            });
+        }
+    </script>
+</body>
+</html>

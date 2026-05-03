@@ -135,6 +135,32 @@
             display: none;
         }
 
+        /* Back to Menu Button */
+        #menu-btn {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 20;
+            pointer-events: auto;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        #menu-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-50%) scale(1.05);
+        }
+
         /* Style Selector Button */
         #style-btn {
             position: absolute;
@@ -232,6 +258,9 @@
 <body>
 
     <div id="game-container">
+        <!-- Back to Menu Button -->
+        <a href="main-menu.html" id="menu-btn">← Menu</a>
+
         <div id="ui-layer">
             <div id="hud">Level: <span id="level-display">1</span> | Time: <span id="time-display">0</span>s</div>
         </div>
