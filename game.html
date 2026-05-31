@@ -1140,16 +1140,16 @@
                 this.ctx.strokeStyle = theme.exitBorder;
                 this.ctx.strokeRect(this.exit.x * this.tileSize, this.exit.y * this.tileSize, this.tileSize, this.tileSize);
 
-                // Draw Player with glow effect
+                // Draw Player with glow effect and skin overlay
                 this.ctx.shadowColor = theme.player;
                 this.ctx.shadowBlur = 8;
                 this.ctx.fillStyle = theme.player;
                 this.ctx.fillRect(this.player.x * this.tileSize, this.player.y * this.tileSize, this.tileSize, this.tileSize);
                 this.ctx.shadowBlur = 0;
                 
-                // Draw player with selected skin
+                // Draw player skin on top of the player model
                 const currentSkinObj = SKINS.find(s => s.id === this.currentSkin);
-                this.drawSkin(this.ctx, currentSkinObj, this.player.x * this.tileSize, this.player.y * this.tileSize, this.tileSize);
+                this.drawSkinOnPlayer(this.ctx, currentSkinObj, this.player.x * this.tileSize, this.player.y * this.tileSize, this.tileSize);
             }
 
             // --- MOBILE TOUCH CONTROLS ---
@@ -1189,6 +1189,198 @@
                 addTouchEvents(btnDown, 'ArrowDown');
                 addTouchEvents(btnLeft, 'ArrowLeft');
                 addTouchEvents(btnRight, 'ArrowRight');
+            }
+
+            // Draw only the eyes and mouth on top of the player
+            drawSkinOnPlayer(ctx, skin, x, y, size) {
+                const padding = 2;
+                const scale = size / 20; // Scale relative to tile size
+
+                // Draw eyes
+                if (skin.eyes === 'shades') {
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(x + padding + 5 * scale, y + padding + 10 * scale, 8 * scale, 6 * scale);
+                    ctx.fillRect(x + size - padding - 13 * scale, y + padding + 10 * scale, 8 * scale, 6 * scale);
+                } else if (skin.eyes === 'ghost') {
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(x + padding + 10 * scale, y + padding + 10 * scale, 3 * scale, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x + size - padding - 10 * scale, y + padding + 10 * scale, 3 * scale, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (skin.eyes === 'glasses') {
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2 * scale;
+                    ctx.strokeRect(x + padding + 4 * scale, y + padding + 8 * scale, 8 * scale, 8 * scale);
+                    ctx.strokeRect(x + size - padding - 12 * scale, y + padding + 8 * scale, 8 * scale, 8 * scale);
+                } else if (skin.eyes === 'hearts') {
+                    ctx.fillStyle = '#ff0000';
+                    ctx.font = `bold ${8 * scale}px Arial`;
+                    ctx.fillText('♥', x + padding + 6 * scale, y + padding + 12 * scale);
+                    ctx.fillText('♥', x + size - padding - 12 * scale, y + padding + 12 * scale);
+                } else if (skin.eyes === 'closed') {
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2 * scale;
+                    ctx.beginPath();
+                    ctx.arc(x + padding + 10 * scale, y + padding + 10 * scale, 3 * scale, 0, Math.PI);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x + size - padding - 10 * scale, y + padding + 10 * scale, 3 * scale, 0, Math.PI);
+                    ctx.stroke();
+                } else if (skin.eyes === 'line') {
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 1 * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(x + padding + 7 * scale, y + padding + 10 * scale);
+                    ctx.lineTo(x + padding + 13 * scale, y + padding + 10 * scale);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(x + size - padding - 13 * scale, y + padding + 10 * scale);
+                    ctx.lineTo(x + size - padding - 7 * scale, y + padding + 10 * scale);
+                    ctx.stroke();
+                } else if (Array.isArray(skin.eyes)) {
+                    ctx.fillStyle = '#000000';
+                    skin.eyes.forEach(([ex, ey]) => {
+                        ctx.fillRect(x + padding + ex * scale, y + padding + ey * scale, 3 * scale, 3 * scale);
+                    });
+                }
+
+                // Draw mouth
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1 * scale;
+                ctx.fillStyle = '#000000';
+
+                const mouthY = y + padding + 18 * scale;
+                const mouthX = x + size / 2;
+
+                switch (skin.mouth) {
+                    case 'smile':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 5 * scale, 0, Math.PI);
+                        ctx.stroke();
+                        break;
+                    case 'frown':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY + 3 * scale, 5 * scale, Math.PI, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+                    case 'wink':
+                        ctx.fillRect(mouthX - 3 * scale, mouthY - 2 * scale, 6 * scale, 4 * scale);
+                        break;
+                    case 'cool':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 4 * scale, 0, Math.PI);
+                        ctx.stroke();
+                        break;
+                    case 'surprise':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 2 * scale, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case 'yawn':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 3 * scale, mouthY - 2 * scale);
+                        ctx.lineTo(mouthX, mouthY + 2 * scale);
+                        ctx.lineTo(mouthX + 3 * scale, mouthY - 2 * scale);
+                        ctx.stroke();
+                        break;
+                    case 'angry':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 4 * scale, mouthY + 2 * scale);
+                        ctx.lineTo(mouthX + 4 * scale, mouthY - 2 * scale);
+                        ctx.stroke();
+                        break;
+                    case 'evil':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 4 * scale, mouthY - 2 * scale);
+                        ctx.quadraticCurveTo(mouthX, mouthY + 3 * scale, mouthX + 4 * scale, mouthY - 2 * scale);
+                        ctx.stroke();
+                        break;
+                    case 'nerdy':
+                        ctx.fillRect(mouthX - 2 * scale, mouthY, 4 * scale, 2 * scale);
+                        break;
+                    case 'xd':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY + 1 * scale, 4 * scale, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.font = `bold ${6 * scale}px Arial`;
+                        ctx.fillText('D', mouthX + 3 * scale, mouthY - 1 * scale);
+                        break;
+                    case 'love':
+                        ctx.font = `bold ${8 * scale}px Arial`;
+                        ctx.fillText('♥', mouthX - 2 * scale, mouthY + 2 * scale);
+                        break;
+                    case 'dizzy':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 1 * scale, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case 'confused':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 3 * scale, mouthY);
+                        ctx.quadraticCurveTo(mouthX, mouthY - 2 * scale, mouthX + 3 * scale, mouthY);
+                        ctx.stroke();
+                        break;
+                    case 'excited':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 3 * scale, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.fillRect(mouthX - 4 * scale, mouthY - 4 * scale, 2 * scale, 3 * scale);
+                        ctx.fillRect(mouthX + 2 * scale, mouthY - 4 * scale, 2 * scale, 3 * scale);
+                        break;
+                    case 'pirate':
+                        ctx.fillRect(mouthX - 2 * scale, mouthY, 4 * scale, 2 * scale);
+                        ctx.fillRect(mouthX - 1 * scale, mouthY - 1 * scale, 2 * scale, 1 * scale);
+                        break;
+                    case 'boo':
+                        ctx.fillRect(mouthX - 2 * scale, mouthY - 1 * scale, 4 * scale, 3 * scale);
+                        break;
+                    case 'party':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 3 * scale, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.fillRect(mouthX - 3 * scale, mouthY - 3 * scale, 2 * scale, 2 * scale);
+                        ctx.fillRect(mouthX + 1 * scale, mouthY - 3 * scale, 2 * scale, 2 * scale);
+                        break;
+                    case 'grumpy':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 4 * scale, mouthY - 1 * scale);
+                        ctx.lineTo(mouthX + 4 * scale, mouthY + 1 * scale);
+                        ctx.stroke();
+                        break;
+                    case 'shy':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 2 * scale, 0, Math.PI);
+                        ctx.stroke();
+                        break;
+                    case 'mischief':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 3 * scale, mouthY);
+                        ctx.quadraticCurveTo(mouthX, mouthY + 2 * scale, mouthX + 3 * scale, mouthY);
+                        ctx.stroke();
+                        ctx.fillRect(mouthX - 1 * scale, mouthY - 2 * scale, 2 * scale, 1 * scale);
+                        break;
+                    case 'sweat':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 2 * scale, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.fillRect(x + size - padding - 6 * scale, y + padding + 5 * scale, 2 * scale, 3 * scale);
+                        break;
+                    case 'grateful':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 3 * scale, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.fillRect(mouthX - 2 * scale, mouthY - 3 * scale, 1 * scale, 2 * scale);
+                        ctx.fillRect(mouthX + 1 * scale, mouthY - 3 * scale, 1 * scale, 2 * scale);
+                        break;
+                    case 'straight':
+                    case 'neutral':
+                        ctx.fillRect(mouthX - 3 * scale, mouthY, 6 * scale, 1 * scale);
+                        break;
+                    case 'none':
+                        break;
+                }
             }
 
             gameLoop() {
