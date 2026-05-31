@@ -237,9 +237,10 @@
 
         let currentSkin = parseInt(localStorage.getItem('mazeRPGSkin') || '1');
 
-        function drawSkin(ctx, skin, width, height) {
-            const padding = 5;
+        function drawSkin(ctx, skin, width, height, isLarge = false) {
+            const padding = isLarge ? 10 : 5;
             const bodySize = width - (padding * 2);
+            const scale = isLarge ? 2 : 1;
 
             // Draw body (white square with glow)
             ctx.fillStyle = '#ffffff';
@@ -248,8 +249,8 @@
             // Draw eyes
             if (skin.eyes === 'shades') {
                 ctx.fillStyle = '#000000';
-                ctx.fillRect(padding + 5, padding + 10, 8, 6);
-                ctx.fillRect(width - padding - 13, padding + 10, 8, 6);
+                ctx.fillRect(padding + 5 * scale, padding + 10 * scale, 8 * scale, 6 * scale);
+                ctx.fillRect(width - padding - 13 * scale, padding + 10 * scale, 8 * scale, 6 * scale);
                 ctx.strokeStyle = '#000000';
                 ctx.lineWidth = 1;
                 ctx.lineTo(padding + 13, padding + 13);
@@ -450,7 +451,7 @@
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
 
-            drawSkin(ctx, currentSkinObj, previewCanvas.width, previewCanvas.height);
+            drawSkin(ctx, currentSkinObj, previewCanvas.width, previewCanvas.height, true);
             document.getElementById('skin-name').textContent = currentSkinObj.name;
         }
 

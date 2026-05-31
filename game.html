@@ -1147,10 +1147,9 @@
                 this.ctx.fillRect(this.player.x * this.tileSize, this.player.y * this.tileSize, this.tileSize, this.tileSize);
                 this.ctx.shadowBlur = 0;
                 
-                // Add "Eyes" to player
-                this.ctx.fillStyle = theme.playerEyes;
-                this.ctx.fillRect(this.player.x * this.tileSize + 5, this.player.y * this.tileSize + 5, 3, 3);
-                this.ctx.fillRect(this.player.x * this.tileSize + 12, this.player.y * this.tileSize + 5, 3, 3);
+                // Draw player with selected skin
+                const currentSkinObj = SKINS.find(s => s.id === this.currentSkin);
+                this.drawSkin(this.ctx, currentSkinObj, this.player.x * this.tileSize, this.player.y * this.tileSize, this.tileSize);
             }
 
             // --- MOBILE TOUCH CONTROLS ---
