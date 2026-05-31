@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maze RPG - Tutorial</title>
     <style>
+        /* CSS STYLES */
         body {
             margin: 0;
             padding: 0;
@@ -15,42 +16,610 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid #333;
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 4 / 3;
+        }
+
+        canvas {
+            display: block;
+            background-color: #000;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px black;
+            font-size: clamp(12px, 2vw, 16px);
+        }
+
+        /* Tutorial Instruction Panel */
+        #tutorial-panel {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px 25px;
+            max-width: 90%;
             text-align: center;
-        }
-
-        h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-
-        p {
-            font-size: 18px;
-            color: #cccccc;
-            margin-bottom: 30px;
-        }
-
-        a {
-            color: #ffffff;
-            text-decoration: none;
-            padding: 15px 30px;
-            background: #333;
-            border: 2px solid #555;
-            border-radius: 10px;
-            font-size: 18px;
+            z-index: 15;
+            backdrop-filter: blur(5px);
             transition: all 0.3s ease;
         }
 
-        a:hover {
-            background: #555;
+        #tutorial-text {
+            font-size: clamp(14px, 2.5vw, 18px);
+            color: #ffffff;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        #tutorial-step {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        /* Completion Screen */
+        #completion-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            display: none;
+        }
+
+        #completion-screen h1 {
+            font-size: 36px;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+
+        #completion-screen p {
+            font-size: 18px;
+            color: #cccccc;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .completion-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .completion-btn {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .completion-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
             transform: scale(1.05);
+        }
+
+        .completion-btn.play-btn {
+            background: rgba(78, 205, 196, 0.3);
+            border-color: rgba(78, 205, 196, 0.6);
+        }
+
+        /* Back to Menu Button */
+        #menu-btn {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 20;
+            pointer-events: auto;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        #menu-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        /* Mobile Controls */
+        #mobile-controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .control-group {
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            backdrop-filter: blur(5px);
+        }
+
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+
+        /* Hide mobile controls on desktop */
+        @media (min-width: 768px) {
+            #mobile-controls {
+                display: none;
+            }
+        }
+
+        /* Success indicator */
+        .success-flash {
+            animation: successPulse 0.5s ease;
+        }
+
+        @keyframes successPulse {
+            0% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0.7); }
+            50% { box-shadow: 0 0 30px 10px rgba(78, 205, 196, 0.3); }
+            100% { box-shadow: 0 0 0 0 rgba(78, 205, 196, 0); }
         }
     </style>
 </head>
 <body>
-    <h1>📖 Tutorial</h1>
-    <p>Tutorial content coming soon!</p>
-    <p>Learn how to navigate the maze and master all 100 levels.</p>
-    <a href="index.html">← Back to Menu</a>
+
+    <div id="game-container">
+        <!-- Back to Menu Button -->
+        <a href="index.html" id="menu-btn">← Menu</a>
+
+        <canvas id="gameCanvas" width="640" height="480"></canvas>
+        
+        <!-- Tutorial Instruction Panel -->
+        <div id="tutorial-panel">
+            <p id="tutorial-text">Welcome to the tutorial!</p>
+            <div id="tutorial-step">Step 1 of 6</div>
+        </div>
+
+        <!-- Mobile Touch Controls -->
+        <div id="mobile-controls">
+            <div class="control-group">
+                <div class="control-btn" id="btn-left">←</div>
+                <div class="control-btn" id="btn-down">↓</div>
+                <div class="control-btn" id="btn-up">↑</div>
+                <div class="control-btn" id="btn-right">→</div>
+            </div>
+        </div>
+
+        <!-- Completion Screen -->
+        <div id="completion-screen">
+            <h1>🎉 Tutorial Complete!</h1>
+            <p>You've learned the basics of navigating the maze.<br>Are you ready to start playing?</p>
+            <div class="completion-buttons">
+                <a href="game.html" class="completion-btn play-btn">▶ Play Game</a>
+                <a href="index.html" class="completion-btn">🏠 Main Menu</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * TUTORIAL SYSTEM
+         * An interactive tutorial that teaches players how to play the maze game.
+         */
+
+        // Tutorial Steps Configuration
+        const TUTORIAL_STEPS = [
+            {
+                id: 1,
+                text: "Welcome to Maze RPG! 🎮<br>Let's learn how to play.<br><br>Use the <strong>arrow keys</strong> or <strong>WASD</strong> to move.",
+                task: "move_any",
+                hint: "Press any direction key to move"
+            },
+            {
+                id: 2,
+                text: "Great! Now let's practice moving <strong>UP</strong>.<br><br>Press the <strong>↑</strong> key or <strong>W</strong>.",
+                task: "move_up",
+                hint: "Press UP arrow or W key"
+            },
+            {
+                id: 3,
+                text: "Excellent! Now try moving <strong>DOWN</strong>.<br><br>Press the <strong>↓</strong> key or <strong>S</strong>.",
+                task: "move_down",
+                hint: "Press DOWN arrow or S key"
+            },
+            {
+                id: 4,
+                text: "Perfect! Now let's move <strong>LEFT</strong>.<br><br>Press the <strong>←</strong> key or <strong>A</strong>.",
+                task: "move_left",
+                hint: "Press LEFT arrow or A key"
+            },
+            {
+                id: 5,
+                text: "Awesome! Now move <strong>RIGHT</strong>.<br><br>Press the <strong>→</strong> key or <strong>D</strong>.",
+                task: "move_right",
+                hint: "Press RIGHT arrow or D key"
+            },
+            {
+                id: 6,
+                text: "Fantastic! 🌟<br>You've learned all the movement controls!<br><br>You're ready to play the game!",
+                task: "complete",
+                hint: ""
+            }
+        ];
+
+        // Style Themes Configuration
+        const STYLE_THEMES = {
+            bw: {
+                name: 'Black & White',
+                background: '#0a0a0a',
+                gridLine: '#1a1a1a',
+                player: '#ffffff',
+                playerEyes: '#000000',
+                targetGlow: '#4ecdc4'
+            }
+        };
+
+        class TutorialGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Game Settings
+                this.tileSize = 20;
+                this.gridWidth = Math.floor(this.canvas.width / this.tileSize);
+                this.gridHeight = Math.floor(this.canvas.height / this.tileSize);
+                
+                // Player starts in the center
+                this.player = {
+                    x: this.gridWidth / 2,
+                    y: this.gridHeight / 2
+                };
+                
+                // Tutorial State
+                this.currentStep = 0;
+                this.taskCompleted = false;
+                this.moveCount = 0;
+                
+                // Input
+                this.keys = {};
+                
+                // DOM Elements
+                this.tutorialText = document.getElementById('tutorial-text');
+                this.tutorialStep = document.getElementById('tutorial-step');
+                this.completionScreen = document.getElementById('completion-screen');
+                this.gameContainer = document.getElementById('game-container');
+                
+                // Initialize
+                this.setupInput();
+                this.setupTouchControls();
+                this.updateTutorialDisplay();
+                this.gameLoop();
+            }
+
+            setupInput() {
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.key] = true;
+                    
+                    // Prevent default for arrow keys
+                    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                    
+                    this.handleInput();
+                });
+                
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.key] = false;
+                });
+            }
+
+            setupTouchControls() {
+                const btnUp = document.getElementById('btn-up');
+                const btnDown = document.getElementById('btn-down');
+                const btnLeft = document.getElementById('btn-left');
+                const btnRight = document.getElementById('btn-right');
+
+                const addTouchEvents = (btn, key) => {
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = true;
+                        this.handleInput();
+                    });
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = false;
+                    });
+                    btn.addEventListener('mousedown', (e) => {
+                        this.keys[key] = true;
+                        this.handleInput();
+                    });
+                    btn.addEventListener('mouseup', (e) => {
+                        this.keys[key] = false;
+                    });
+                    btn.addEventListener('mouseleave', (e) => {
+                        this.keys[key] = false;
+                    });
+                };
+
+                addTouchEvents(btnUp, 'ArrowUp');
+                addTouchEvents(btnDown, 'ArrowDown');
+                addTouchEvents(btnLeft, 'ArrowLeft');
+                addTouchEvents(btnRight, 'ArrowRight');
+            }
+
+            handleInput() {
+                if (this.currentStep >= TUTORIAL_STEPS.length) return;
+                
+                const step = TUTORIAL_STEPS[this.currentStep];
+                let moved = false;
+                let direction = null;
+
+                if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) {
+                    if (this.player.y > 0) {
+                        this.player.y--;
+                        moved = true;
+                        direction = 'up';
+                    }
+                } else if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) {
+                    if (this.player.y < this.gridHeight - 1) {
+                        this.player.y++;
+                        moved = true;
+                        direction = 'down';
+                    }
+                } else if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) {
+                    if (this.player.x > 0) {
+                        this.player.x--;
+                        moved = true;
+                        direction = 'left';
+                    }
+                } else if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) {
+                    if (this.player.x < this.gridWidth - 1) {
+                        this.player.x++;
+                        moved = true;
+                        direction = 'right';
+                    }
+                }
+
+                if (moved) {
+                    this.moveCount++;
+                    this.checkTaskCompletion(direction);
+                    
+                    // Clear keys to prevent continuous movement
+                    Object.keys(this.keys).forEach(key => this.keys[key] = false);
+                }
+            }
+
+            checkTaskCompletion(direction) {
+                if (this.taskCompleted) return;
+                
+                const step = TUTORIAL_STEPS[this.currentStep];
+                let completed = false;
+
+                switch (step.task) {
+                    case 'move_any':
+                        completed = true;
+                        break;
+                    case 'move_up':
+                        completed = direction === 'up';
+                        break;
+                    case 'move_down':
+                        completed = direction === 'down';
+                        break;
+                    case 'move_left':
+                        completed = direction === 'left';
+                        break;
+                    case 'move_right':
+                        completed = direction === 'right';
+                        break;
+                    case 'complete':
+                        completed = true;
+                        break;
+                }
+
+                if (completed) {
+                    this.taskCompleted = true;
+                    this.showSuccessFeedback();
+                    
+                    setTimeout(() => {
+                        this.nextStep();
+                    }, 800);
+                }
+            }
+
+            nextStep() {
+                this.currentStep++;
+                this.taskCompleted = false;
+                
+                if (this.currentStep >= TUTORIAL_STEPS.length) {
+                    this.showCompletion();
+                } else {
+                    this.updateTutorialDisplay();
+                }
+            }
+
+            updateTutorialDisplay() {
+                const step = TUTORIAL_STEPS[this.currentStep];
+                this.tutorialText.innerHTML = step.text;
+                this.tutorialStep.textContent = `Step ${step.id} of ${TUTORIAL_STEPS.length - 1}`;
+            }
+
+            showSuccessFeedback() {
+                this.gameContainer.classList.add('success-flash');
+                setTimeout(() => {
+                    this.gameContainer.classList.remove('success-flash');
+                }, 500);
+            }
+
+            showCompletion() {
+                this.completionScreen.style.display = 'flex';
+                this.tutorialText.parentElement.style.display = 'none';
+            }
+
+            draw() {
+                const theme = STYLE_THEMES.bw;
+                
+                // Clear with background
+                this.ctx.fillStyle = theme.background;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw grid lines (subtle)
+                this.ctx.strokeStyle = theme.gridLine;
+                this.ctx.lineWidth = 0.5;
+                
+                for (let x = 0; x <= this.canvas.width; x += this.tileSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                for (let y = 0; y <= this.canvas.height; y += this.tileSize) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+                
+                // Draw target area (where player should try to go)
+                if (!this.taskCompleted && this.currentStep < TUTORIAL_STEPS.length) {
+                    this.drawTargetArea();
+                }
+                
+                // Draw player
+                this.drawPlayer(theme);
+            }
+
+            drawTargetArea() {
+                const step = TUTORIAL_STEPS[this.currentStep];
+                let targetX = this.player.x;
+                let targetY = this.player.y;
+                
+                switch (step.task) {
+                    case 'move_up': targetY--; break;
+                    case 'move_down': targetY++; break;
+                    case 'move_left': targetX--; break;
+                    case 'move_right': targetX++; break;
+                }
+                
+                if (targetX >= 0 && targetX < this.gridWidth && targetY >= 0 && targetY < this.gridHeight) {
+                    const theme = STYLE_THEMES.bw;
+                    this.ctx.shadowColor = theme.targetGlow;
+                    this.ctx.shadowBlur = 15;
+                    this.ctx.fillStyle = 'rgba(78, 205, 196, 0.3)';
+                    this.ctx.fillRect(
+                        targetX * this.tileSize,
+                        targetY * this.tileSize,
+                        this.tileSize,
+                        this.tileSize
+                    );
+                    this.ctx.shadowBlur = 0;
+                    
+                    // Draw arrow indicator
+                    this.ctx.fillStyle = theme.targetGlow;
+                    this.ctx.font = '16px monospace';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    
+                    let arrow = '↑';
+                    if (step.task === 'move_down') arrow = '↓';
+                    if (step.task === 'move_left') arrow = '←';
+                    if (step.task === 'move_right') arrow = '→';
+                    if (step.task === 'move_any') arrow = '✦';
+                    
+                    this.ctx.fillText(arrow, 
+                        targetX * this.tileSize + this.tileSize / 2,
+                        targetY * this.tileSize + this.tileSize / 2
+                    );
+                }
+            }
+
+            drawPlayer(theme) {
+                const px = this.player.x * this.tileSize;
+                const py = this.player.y * this.tileSize;
+                const size = this.tileSize;
+                
+                // Player glow
+                this.ctx.shadowColor = theme.player;
+                this.ctx.shadowBlur = 10;
+                
+                // Player body
+                this.ctx.fillStyle = theme.player;
+                this.ctx.fillRect(px + 2, py + 2, size - 4, size - 4);
+                
+                this.ctx.shadowBlur = 0;
+                
+                // Player eyes
+                this.ctx.fillStyle = theme.playerEyes;
+                const eyeSize = 3;
+                const eyeOffset = 5;
+                
+                this.ctx.fillRect(px + eyeOffset, py + eyeOffset, eyeSize, eyeSize);
+                this.ctx.fillRect(px + size - eyeOffset - eyeSize, py + eyeOffset, eyeSize, eyeSize);
+            }
+
+            gameLoop() {
+                this.draw();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+
+        // Start the tutorial when the page loads
+        const tutorialGame = new TutorialGame();
+    </script>
 </body>
 </html>
