@@ -165,7 +165,7 @@
         #style-btn {
             position: absolute;
             top: 10px;
-            right: 10px;
+            right: 60px;
             width: 40px;
             height: 40px;
             background: rgba(255, 255, 255, 0.15);
@@ -183,6 +183,32 @@
         }
 
         #style-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Skin Selector Button */
+        #skin-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 20;
+            pointer-events: auto;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        #skin-btn:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: scale(1.1);
         }
@@ -238,6 +264,128 @@
         .preview-bw { background: linear-gradient(135deg, #000 50%, #fff 50%); }
         .preview-galaxy { background: linear-gradient(135deg, #1a0033, #001133, #003322); }
         .preview-colorful { background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1); }
+
+        /* Skin Gallery Modal */
+        #skin-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        #skin-modal.show {
+            display: flex;
+        }
+
+        #skin-modal-content {
+            background: rgba(20, 20, 40, 0.95);
+            border: 2px solid rgba(78, 205, 196, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 40px rgba(78, 205, 196, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #skin-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(78, 205, 196, 0.3);
+            padding-bottom: 15px;
+        }
+
+        #skin-modal-header h2 {
+            margin: 0;
+            color: #4ecdc4;
+            font-size: 24px;
+        }
+
+        #skin-modal-close {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        #skin-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #skin-preview-area {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        #skin-preview-canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            border: 2px solid rgba(78, 205, 196, 0.5);
+            border-radius: 5px;
+        }
+
+        #skin-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            justify-items: center;
+        }
+
+        .skin-item {
+            width: 80px;
+            height: 80px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .skin-item:hover {
+            border-color: rgba(78, 205, 196, 0.6);
+            transform: scale(1.05);
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .skin-item.selected {
+            border-color: rgba(78, 205, 196, 0.9);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
+            background: rgba(78, 205, 196, 0.2);
+        }
+
+        .skin-canvas {
+            width: 60px;
+            height: 60px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
 
         h1 { margin: 0 0 10px 0; color: #fff; }
         p { margin: 0 0 20px 0; color: #ccc; }
@@ -296,6 +444,9 @@
         <!-- Style Selector Button -->
         <button id="style-btn" title="Change Style">🎨</button>
 
+        <!-- Skin Selector Button -->
+        <button id="skin-btn" title="Select Skin">👾</button>
+
         <!-- Style Selector Dropdown -->
         <div id="style-dropdown">
             <div class="style-option active" data-style="bw" onclick="game.setStyle('bw')">
@@ -309,6 +460,22 @@
             <div class="style-option" data-style="colorful" onclick="game.setStyle('colorful')">
                 <span class="preview preview-colorful"></span>
                 <span>Colorful</span>
+            </div>
+        </div>
+
+        <!-- Skin Gallery Modal -->
+        <div id="skin-modal" style="display: none;">
+            <div id="skin-modal-content">
+                <div id="skin-modal-header">
+                    <h2>Select Your Skin</h2>
+                    <button id="skin-modal-close" onclick="game.closeSkinGallery()">✕</button>
+                </div>
+                <div id="skin-preview-area">
+                    <canvas id="skin-preview-canvas" width="100" height="100"></canvas>
+                </div>
+                <div id="skin-gallery">
+                    <!-- Skins will be generated here by JavaScript -->
+                </div>
             </div>
         </div>
     </div>
@@ -369,6 +536,35 @@
             }
         };
 
+        // Skin definitions - 25 unique skins with different facial expressions
+        const SKINS = [
+            { id: 1, name: 'Classic', eyes: [[3, 3], [10, 3]], mouth: 'neutral' },
+            { id: 2, name: 'Happy', eyes: [[3, 3], [10, 3]], mouth: 'smile' },
+            { id: 3, name: 'Sad', eyes: [[3, 3], [10, 3]], mouth: 'frown' },
+            { id: 4, name: 'Wink', eyes: [[3, 3]], mouth: 'wink' },
+            { id: 5, name: 'Sunglasses', eyes: 'shades', mouth: 'cool' },
+            { id: 6, name: 'Big Eyes', eyes: [[2, 2], [11, 2]], mouth: 'surprise' },
+            { id: 7, name: 'Sleepy', eyes: 'closed', mouth: 'yawn' },
+            { id: 8, name: 'Angry', eyes: [[3, 3], [10, 3]], mouth: 'angry' },
+            { id: 9, name: 'Evil', eyes: [[2, 3], [9, 3]], mouth: 'evil' },
+            { id: 10, name: 'Nerd', eyes: 'glasses', mouth: 'nerdy' },
+            { id: 11, name: 'XD', eyes: [[3, 3], [10, 3]], mouth: 'xd' },
+            { id: 12, name: 'Love', eyes: 'hearts', mouth: 'love' },
+            { id: 13, name: 'Dizzy', eyes: [[4, 2], [9, 2]], mouth: 'dizzy' },
+            { id: 14, name: 'Confused', eyes: [[3, 3], [10, 3]], mouth: 'confused' },
+            { id: 15, name: 'Excited', eyes: [[3, 3], [10, 3]], mouth: 'excited' },
+            { id: 16, name: 'Pirate', eyes: [[3, 3]], mouth: 'pirate' },
+            { id: 17, name: 'Ghostly', eyes: 'ghost', mouth: 'boo' },
+            { id: 18, name: 'No Mouth', eyes: [[3, 3], [10, 3]], mouth: 'none' },
+            { id: 19, name: 'Expressionless', eyes: 'line', mouth: 'straight' },
+            { id: 20, name: 'Party', eyes: [[2, 2], [11, 2]], mouth: 'party' },
+            { id: 21, name: 'Grumpy', eyes: [[2, 4], [11, 4]], mouth: 'grumpy' },
+            { id: 22, name: 'Shy', eyes: [[5, 3], [9, 3]], mouth: 'shy' },
+            { id: 23, name: 'Mischief', eyes: [[3, 2], [10, 2]], mouth: 'mischief' },
+            { id: 24, name: 'Sweat', eyes: [[3, 3], [10, 3]], mouth: 'sweat' },
+            { id: 25, name: 'Grateful', eyes: [[3, 3], [10, 3]], mouth: 'grateful' }
+        ];
+
         class Game {
             constructor() {
                 this.canvas = document.getElementById('gameCanvas');
@@ -389,6 +585,7 @@
 
                 // Current Style Theme - Read from localStorage
                 this.currentStyle = localStorage.getItem('mazeRPGStyle') || 'bw';
+                this.currentSkin = parseInt(localStorage.getItem('mazeRPGSkin') || '1');
 
                 // DOM Elements
                 this.levelDisplay = document.getElementById('level-display');
@@ -398,9 +595,14 @@
                 this.levelCompleteScreen = document.getElementById('level-complete-screen');
                 this.styleBtn = document.getElementById('style-btn');
                 this.styleDropdown = document.getElementById('style-dropdown');
+                this.skinBtn = document.getElementById('skin-btn');
+                this.skinModal = document.getElementById('skin-modal');
 
                 // Setup style selector
                 this.setupStyleSelector();
+
+                // Setup skin selector
+                this.setupSkinSelector();
 
                 // Apply saved style on load
                 this.applyStyle(this.currentStyle);
@@ -415,6 +617,297 @@
 
                 // Start Game
                 this.init();
+            }
+
+            // --- SKIN SELECTOR ---
+            setupSkinSelector() {
+                // Open skin gallery on button click
+                this.skinBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.openSkinGallery();
+                });
+
+                // Close modal when clicking outside
+                this.skinModal.addEventListener('click', (e) => {
+                    if (e.target === this.skinModal) {
+                        this.closeSkinGallery();
+                    }
+                });
+
+                // Generate skin gallery on first open
+                this.generateSkinGallery();
+            }
+
+            generateSkinGallery() {
+                const gallery = document.getElementById('skin-gallery');
+                gallery.innerHTML = '';
+
+                SKINS.forEach(skin => {
+                    const skinItem = document.createElement('div');
+                    skinItem.className = 'skin-item';
+                    if (skin.id === this.currentSkin) {
+                        skinItem.classList.add('selected');
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'skin-canvas';
+                    canvas.width = 60;
+                    canvas.height = 60;
+
+                    this.drawSkin(canvas.getContext('2d'), skin, canvas.width, canvas.height);
+
+                    skinItem.appendChild(canvas);
+                    skinItem.addEventListener('click', () => this.selectSkin(skin));
+                    gallery.appendChild(skinItem);
+                });
+            }
+
+            openSkinGallery() {
+                this.skinModal.classList.add('show');
+                this.updateSkinPreview();
+            }
+
+            closeSkinGallery() {
+                this.skinModal.classList.remove('show');
+            }
+
+            selectSkin(skin) {
+                this.currentSkin = skin.id;
+                localStorage.setItem('mazeRPGSkin', skin.id);
+
+                // Update selected indicator
+                document.querySelectorAll('.skin-item').forEach((item, idx) => {
+                    item.classList.toggle('selected', SKINS[idx].id === skin.id);
+                });
+
+                // Update preview
+                this.updateSkinPreview();
+            }
+
+            updateSkinPreview() {
+                const previewCanvas = document.getElementById('skin-preview-canvas');
+                const ctx = previewCanvas.getContext('2d');
+                const currentSkinObj = SKINS.find(s => s.id === this.currentSkin);
+
+                // Clear canvas
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+                // Draw enlarged skin
+                this.drawSkin(ctx, currentSkinObj, previewCanvas.width, previewCanvas.height);
+            }
+
+            drawSkin(ctx, skin, width, height) {
+                const padding = 5;
+                const bodySize = width - (padding * 2);
+
+                // Draw body (white square with glow)
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(padding, padding, bodySize, bodySize);
+
+                // Draw eyes
+                if (skin.eyes === 'shades') {
+                    // Sunglasses
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(padding + 5, padding + 10, 8, 6);
+                    ctx.fillRect(width - padding - 13, padding + 10, 8, 6);
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 1;
+                    ctx.lineTo(padding + 13, padding + 13);
+                    ctx.lineTo(width - padding - 13, padding + 13);
+                    ctx.stroke();
+                } else if (skin.eyes === 'ghost') {
+                    // Ghost eyes
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(padding + 10, padding + 10, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(width - padding - 10, padding + 10, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (skin.eyes === 'glasses') {
+                    // Nerd glasses
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(padding + 4, padding + 8, 8, 8);
+                    ctx.strokeRect(width - padding - 12, padding + 8, 8, 8);
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 1;
+                    ctx.lineTo(padding + 12, padding + 12);
+                    ctx.lineTo(width - padding - 12, padding + 12);
+                    ctx.stroke();
+                } else if (skin.eyes === 'hearts') {
+                    // Heart eyes
+                    ctx.fillStyle = '#ff0000';
+                    ctx.font = 'bold 8px Arial';
+                    ctx.fillText('♥', padding + 6, padding + 12);
+                    ctx.fillText('♥', width - padding - 12, padding + 12);
+                } else if (skin.eyes === 'closed') {
+                    // Closed/sleepy eyes
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(padding + 10, padding + 10, 3, 0, Math.PI);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(width - padding - 10, padding + 10, 3, 0, Math.PI);
+                    ctx.stroke();
+                } else if (skin.eyes === 'line') {
+                    // Line eyes
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(padding + 7, padding + 10);
+                    ctx.lineTo(padding + 13, padding + 10);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(width - padding - 13, padding + 10);
+                    ctx.lineTo(width - padding - 7, padding + 10);
+                    ctx.stroke();
+                } else if (Array.isArray(skin.eyes)) {
+                    // Normal eyes
+                    ctx.fillStyle = '#000000';
+                    skin.eyes.forEach(([x, y]) => {
+                        ctx.fillRect(padding + x, padding + y, 3, 3);
+                    });
+                }
+
+                // Draw mouth
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.fillStyle = '#000000';
+
+                const mouthY = padding + 18;
+                const mouthX = width / 2;
+
+                switch (skin.mouth) {
+                    case 'smile':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 5, 0, Math.PI);
+                        ctx.stroke();
+                        break;
+                    case 'frown':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY + 3, 5, Math.PI, Math.PI * 2);
+                        ctx.stroke();
+                        break;
+                    case 'wink':
+                        ctx.fillRect(mouthX - 3, mouthY - 2, 6, 4);
+                        break;
+                    case 'cool':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 4, 0, Math.PI);
+                        ctx.stroke();
+                        break;
+                    case 'surprise':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case 'yawn':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 3, mouthY - 2);
+                        ctx.lineTo(mouthX, mouthY + 2);
+                        ctx.lineTo(mouthX + 3, mouthY - 2);
+                        ctx.stroke();
+                        break;
+                    case 'angry':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 4, mouthY + 2);
+                        ctx.lineTo(mouthX + 4, mouthY - 2);
+                        ctx.stroke();
+                        break;
+                    case 'evil':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 4, mouthY - 2);
+                        ctx.quadraticCurveTo(mouthX, mouthY + 3, mouthX + 4, mouthY - 2);
+                        ctx.stroke();
+                        break;
+                    case 'nerdy':
+                        ctx.fillRect(mouthX - 2, mouthY, 4, 2);
+                        break;
+                    case 'xd':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY + 1, 4, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.font = 'bold 6px Arial';
+                        ctx.fillText('D', mouthX + 3, mouthY - 1);
+                        break;
+                    case 'love':
+                        ctx.font = 'bold 8px Arial';
+                        ctx.fillText('♥', mouthX - 2, mouthY + 2);
+                        break;
+                    case 'dizzy':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 1, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                    case 'confused':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 3, mouthY);
+                        ctx.quadraticCurveTo(mouthX, mouthY - 2, mouthX + 3, mouthY);
+                        ctx.stroke();
+                        break;
+                    case 'excited':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 3, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.fillRect(mouthX - 4, mouthY - 4, 2, 3);
+                        ctx.fillRect(mouthX + 2, mouthY - 4, 2, 3);
+                        break;
+                    case 'pirate':
+                        ctx.fillRect(mouthX - 2, mouthY, 4, 2);
+                        ctx.fillRect(mouthX - 1, mouthY - 1, 2, 1);
+                        break;
+                    case 'boo':
+                        ctx.fillRect(mouthX - 2, mouthY - 1, 4, 3);
+                        break;
+                    case 'party':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 3, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.fillRect(mouthX - 3, mouthY - 3, 2, 2);
+                        ctx.fillRect(mouthX + 1, mouthY - 3, 2, 2);
+                        break;
+                    case 'grumpy':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 4, mouthY - 1);
+                        ctx.lineTo(mouthX + 4, mouthY + 1);
+                        ctx.stroke();
+                        break;
+                    case 'shy':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 2, 0, Math.PI);
+                        ctx.stroke();
+                        break;
+                    case 'mischief':
+                        ctx.beginPath();
+                        ctx.moveTo(mouthX - 3, mouthY);
+                        ctx.quadraticCurveTo(mouthX, mouthY + 2, mouthX + 3, mouthY);
+                        ctx.stroke();
+                        ctx.fillRect(mouthX - 1, mouthY - 2, 2, 1);
+                        break;
+                    case 'sweat':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 2, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.fillRect(width - padding - 6, padding + 5, 2, 3);
+                        break;
+                    case 'grateful':
+                        ctx.beginPath();
+                        ctx.arc(mouthX, mouthY, 3, 0, Math.PI);
+                        ctx.stroke();
+                        ctx.fillRect(mouthX - 2, mouthY - 3, 1, 2);
+                        ctx.fillRect(mouthX + 1, mouthY - 3, 1, 2);
+                        break;
+                    case 'straight':
+                    case 'neutral':
+                        ctx.fillRect(mouthX - 3, mouthY, 6, 1);
+                        break;
+                    case 'none':
+                        // No mouth
+                        break;
+                }
             }
 
             // --- STYLE SELECTOR ---
