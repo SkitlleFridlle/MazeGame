@@ -297,15 +297,22 @@
             } else if (Array.isArray(skin.eyes)) {
                 ctx.fillStyle = '#000000';
                 // Center the eyes horizontally
-                const centerOffset = (width - padding * 2 - (skin.eyes.length > 1 ? 10 : 0)) / 2;
+                const centerX = width / 2;
                 skin.eyes.forEach(([x, y], idx) => {
                     if (skin.eyes.length === 1) {
                         // Single eye - center it
-                        ctx.fillRect(padding + (width - padding * 2) / 2 - 1.5, padding + y, 3, 3);
+                        ctx.fillRect(centerX - 1.5, padding + 8, 3, 3);
                     } else {
                         // Two eyes - center them together
-                        const adjustedX = idx === 0 ? 3 : 10;
-                        ctx.fillRect(padding + centerOffset + adjustedX, padding + y, 3, 3);
+                        const eyeSpacing = 7;
+                        const leftEyeX = centerX - eyeSpacing / 2 - 1.5;
+                        const rightEyeX = centerX + eyeSpacing / 2 - 1.5;
+                        const eyeY = padding + 8;
+                        if (idx === 0) {
+                            ctx.fillRect(leftEyeX, eyeY, 3, 3);
+                        } else {
+                            ctx.fillRect(rightEyeX, eyeY, 3, 3);
+                        }
                     }
                 });
             }
