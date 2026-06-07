@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maze RPG - Duels</title>
     <style>
+        /* CSS STYLES */
         body {
             margin: 0;
             padding: 0;
@@ -15,42 +16,847 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            text-align: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
         }
 
-        h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid #333;
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 4 / 3;
         }
 
-        p {
-            font-size: 18px;
-            color: #cccccc;
-            margin-bottom: 30px;
+        canvas {
+            display: block;
+            background-color: #000;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
         }
 
-        a {
-            color: #ffffff;
-            text-decoration: none;
-            padding: 15px 30px;
-            background: #333;
-            border: 2px solid #555;
-            border-radius: 10px;
-            font-size: 18px;
+        #ui-layer {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px black;
+            font-size: clamp(12px, 2vw, 16px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #hud {
+            font-size: clamp(12px, 2vw, 16px);
+            margin-bottom: 5px;
+        }
+
+        #score-display {
+            font-size: clamp(14px, 2.5vw, 18px);
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        #room-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+            z-index: 20;
+        }
+
+        .room-btn {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            color: white;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        a:hover {
-            background: #555;
+        .room-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
             transform: scale(1.05);
+        }
+
+        #menu-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 20;
+            pointer-events: auto;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        #menu-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Mobile Controls */
+        #mobile-controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .control-group {
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            backdrop-filter: blur(5px);
+        }
+
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.95);
+        }
+
+        /* Overlays */
+        #waiting-overlay, #countdown-overlay, #winner-overlay, #room-setup-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            display: none;
+        }
+
+        .overlay-content {
+            text-align: center;
+        }
+
+        .overlay-content h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+        }
+
+        .overlay-content p {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #cccccc;
+        }
+
+        .overlay-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .overlay-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+
+        #countdown-text {
+            font-size: 72px;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin: 20px 0;
+        }
+
+        #room-code-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin: 20px 0;
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+
+        #player-name-input {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 2px solid #4ecdc4;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-family: inherit;
+            margin: 10px 0;
+            width: 200px;
+        }
+
+        #player-name-input::placeholder {
+            color: #888;
+        }
+
+        @media (min-width: 768px) {
+            #mobile-controls {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>⚔️ Duels</h1>
-    <p>Duel mode coming soon!</p>
-    <p>Challenge other players in competitive maze races.</p>
-    <a href="index.html">← Back to Menu</a>
+
+    <div id="game-container">
+        <!-- Back to Menu Button -->
+        <a href="index.html" id="menu-btn">← Menu</a>
+
+        <div id="ui-layer">
+            <div id="hud">Room: <span id="room-code">...</span></div>
+            <div id="score-display">
+                <span id="p1-name">P1</span> <span id="p1-score">0</span> - <span id="p2-score">0</span> <span id="p2-name">P2</span>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" width="640" height="480"></canvas>
+
+        <!-- Mobile Touch Controls -->
+        <div id="mobile-controls">
+            <div class="control-group">
+                <div class="control-btn" id="btn-left">←</div>
+                <div class="control-btn" id="btn-down">↓</div>
+                <div class="control-btn" id="btn-up">↑</div>
+                <div class="control-btn" id="btn-right">→</div>
+            </div>
+        </div>
+
+        <!-- Room Setup Overlay -->
+        <div id="room-setup-overlay">
+            <div class="overlay-content">
+                <h2>⚔️ Duels</h2>
+                <p>Enter your name:</p>
+                <input type="text" id="player-name-input" placeholder="Your name" maxlength="20">
+                <button class="overlay-btn" onclick="game.joinRoom()">Join Room</button>
+                <p style="margin-top: 30px; font-size: 14px; color: #888;">Or create a new room:</p>
+                <button class="overlay-btn" onclick="game.createNewRoom()">🎲 New Room</button>
+            </div>
+        </div>
+
+        <!-- Waiting Overlay -->
+        <div id="waiting-overlay">
+            <div class="overlay-content">
+                <h2>⏳ Waiting for P2...</h2>
+                <p>Room Code:</p>
+                <div id="room-code-display"></div>
+                <p style="font-size: 14px; color: #888;">Share this code with your opponent</p>
+                <button class="overlay-btn" onclick="game.copyRoomCode()">📋 Copy Link</button>
+            </div>
+        </div>
+
+        <!-- Countdown Overlay -->
+        <div id="countdown-overlay">
+            <div class="overlay-content">
+                <h2>Get Ready!</h2>
+                <div id="countdown-text">3</div>
+            </div>
+        </div>
+
+        <!-- Winner Overlay -->
+        <div id="winner-overlay">
+            <div class="overlay-content">
+                <h2 id="winner-text">🏆 You Win!</h2>
+                <p id="winner-message">First to 3 wins!</p>
+                <button class="overlay-btn" onclick="game.nextRound()">🔁 Next Round</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Skin definitions (shared with single-player)
+        const SKINS = [
+            { id: 1, name: 'Classic', eyes: [[3, 3], [10, 3]], mouth: 'neutral' },
+            { id: 2, name: 'Happy', eyes: [[3, 3], [10, 3]], mouth: 'smile' },
+            { id: 3, name: 'Sad', eyes: [[3, 3], [10, 3]], mouth: 'frown' },
+            { id: 4, name: 'Wink', eyes: [[3, 3]], mouth: 'wink' },
+            { id: 5, name: 'Sunglasses', eyes: 'shades', mouth: 'cool' },
+            { id: 6, name: 'Big Eyes', eyes: [[2, 2], [11, 2]], mouth: 'surprise' },
+            { id: 7, name: 'Sleepy', eyes: 'closed', mouth: 'yawn' },
+            { id: 8, name: 'Angry', eyes: [[3, 3], [10, 3]], mouth: 'angry' },
+            { id: 9, name: 'Evil', eyes: [[2, 3], [9, 3]], mouth: 'evil' },
+            { id: 10, name: 'Nerd', eyes: 'glasses', mouth: 'nerdy' },
+            { id: 11, name: 'XD', eyes: [[3, 3], [10, 3]], mouth: 'xd' },
+            { id: 12, name: 'Love', eyes: 'hearts', mouth: 'love' },
+            { id: 13, name: 'Dizzy', eyes: [[4, 2], [9, 2]], mouth: 'dizzy' },
+            { id: 14, name: 'Confused', eyes: [[3, 3], [10, 3]], mouth: 'confused' },
+            { id: 15, name: 'Excited', eyes: [[3, 3], [10, 3]], mouth: 'excited' },
+            { id: 16, name: 'Pirate', eyes: [[3, 3]], mouth: 'pirate' },
+            { id: 17, name: 'Ghostly', eyes: 'ghost', mouth: 'boo' },
+            { id: 18, name: 'No Mouth', eyes: [[3, 3], [10, 3]], mouth: 'none' },
+            { id: 19, name: 'Expressionless', eyes: 'line', mouth: 'straight' },
+            { id: 20, name: 'Party', eyes: [[2, 2], [11, 2]], mouth: 'party' },
+            { id: 21, name: 'Grumpy', eyes: [[2, 4], [11, 4]], mouth: 'grumpy' },
+            { id: 22, name: 'Shy', eyes: [[5, 3], [9, 3]], mouth: 'shy' },
+            { id: 23, name: 'Mischief', eyes: [[3, 2], [10, 2]], mouth: 'mischief' },
+            { id: 24, name: 'Sweat', eyes: [[3, 3], [10, 3]], mouth: 'sweat' },
+            { id: 25, name: 'Grateful', eyes: [[3, 3], [10, 3]], mouth: 'grateful' }
+        ];
+
+        class DuelsGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Game State
+                this.roomCode = null;
+                this.playerId = localStorage.getItem('playerId') || this.generatePlayerId();
+                localStorage.setItem('playerId', this.playerId);
+                
+                this.playerName = '';
+                this.isP1 = false;
+                this.isP2 = false;
+                this.gameState = null;
+                this.localPlayer = null;
+                this.remotePlayer = null;
+                
+                this.score = { p1: 0, p2: 0 };
+                this.round = 1;
+                this.bestOf = 3;
+                
+                // Grid Settings
+                this.tileSize = 20;
+                this.grid = [];
+                this.goal = { x: 0, y: 0 };
+                
+                // Input Handling
+                this.keys = {};
+                window.addEventListener('keydown', (e) => this.keys[e.key] = true);
+                window.addEventListener('keyup', (e) => this.keys[e.key] = false);
+                
+                // Mobile Touch Controls
+                this.setupTouchControls();
+                
+                // Get room code from URL
+                const params = new URLSearchParams(window.location.search);
+                this.roomCode = params.get('room');
+                
+                if (this.roomCode) {
+                    this.showRoomSetup();
+                } else {
+                    this.showRoomSetup();
+                }
+            }
+
+            generatePlayerId() {
+                return 'player_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            showRoomSetup() {
+                document.getElementById('room-setup-overlay').style.display = 'flex';
+            }
+
+            createNewRoom() {
+                this.roomCode = this.generateRoomCode();
+                window.history.replaceState({}, '', `?room=${this.roomCode}`);
+                this.joinRoom();
+            }
+
+            generateRoomCode() {
+                return Math.random().toString(36).substr(2, 6).toUpperCase();
+            }
+
+            joinRoom() {
+                const nameInput = document.getElementById('player-name-input');
+                this.playerName = nameInput.value.trim() || 'Player';
+                
+                if (!this.roomCode) {
+                    this.createNewRoom();
+                    return;
+                }
+                
+                // Hide setup overlay
+                document.getElementById('room-setup-overlay').style.display = 'none';
+                
+                // Show waiting overlay
+                document.getElementById('waiting-overlay').style.display = 'flex';
+                document.getElementById('room-code-display').textContent = this.roomCode;
+                document.getElementById('room-code').textContent = this.roomCode;
+                
+                // Start polling for game state
+                this.startPolling();
+            }
+
+            copyRoomCode() {
+                const link = `${window.location.origin}${window.location.pathname}?room=${this.roomCode}`;
+                navigator.clipboard.writeText(link).then(() => {
+                    alert('Room link copied to clipboard!');
+                });
+            }
+
+            startPolling() {
+                // Poll every 300ms for game state updates
+                this.pollInterval = setInterval(() => this.pollGameState(), 300);
+            }
+
+            async pollGameState() {
+                try {
+                    // For now, simulate local game state
+                    // In production, this would call /api/duel?action=state&room=<code>
+                    
+                    if (!this.gameState) {
+                        // Initialize game state
+                        this.initializeGame();
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }
+
+            initializeGame() {
+                // Generate maze with deterministic seed
+                const seed = this.hashCode(this.roomCode);
+                this.generateMaze(seed);
+                
+                // Calculate equidistant spawns
+                this.calculateEquidistantSpawns();
+                
+                // Initialize players
+                this.localPlayer = {
+                    id: this.playerId,
+                    name: this.playerName,
+                    pos: { x: this.spawnA.x, y: this.spawnA.y },
+                    skin: parseInt(localStorage.getItem('mazeRPGSkin') || '1')
+                };
+                
+                this.remotePlayer = {
+                    id: 'remote',
+                    name: 'Opponent',
+                    pos: { x: this.spawnB.x, y: this.spawnB.y },
+                    skin: 1
+                };
+                
+                this.gameState = {
+                    seed: seed,
+                    goal: this.goal,
+                    spawnA: this.spawnA,
+                    spawnB: this.spawnB,
+                    p1: this.localPlayer,
+                    p2: this.remotePlayer,
+                    round: this.round,
+                    score: this.score,
+                    winner: null,
+                    startedAt: Date.now()
+                };
+                
+                // Hide waiting overlay and start countdown
+                document.getElementById('waiting-overlay').style.display = 'none';
+                this.startCountdown();
+            }
+
+            startCountdown() {
+                document.getElementById('countdown-overlay').style.display = 'flex';
+                let count = 3;
+                
+                const countdownInterval = setInterval(() => {
+                    document.getElementById('countdown-text').textContent = count;
+                    count--;
+                    
+                    if (count < 0) {
+                        clearInterval(countdownInterval);
+                        document.getElementById('countdown-overlay').style.display = 'none';
+                        this.gameLoop();
+                    }
+                }, 1000);
+            }
+
+            // --- MAZE GENERATION ---
+            generateMaze(seed) {
+                const width = Math.floor(this.canvas.width / this.tileSize);
+                const height = Math.floor(this.canvas.height / this.tileSize);
+
+                // Seeded random number generator
+                const seededRandom = this.createSeededRandom(seed);
+                
+                // Initialize grid
+                this.grid = Array.from({ length: height }, () => Array(width).fill(0));
+
+                // Carve maze using seeded RNG
+                this.carve(1, 1, seededRandom);
+
+                // Place goal
+                let goalFound = false;
+                while (!goalFound) {
+                    const gx = Math.floor(seededRandom() * (width - 2)) + 1;
+                    const gy = Math.floor(seededRandom() * (height - 2)) + 1;
+                    if (this.grid[gy][gx] === 1 && (gx > width/2 || gy > height/2)) {
+                        this.goal = { x: gx, y: gy };
+                        goalFound = true;
+                    }
+                }
+            }
+
+            createSeededRandom(seed) {
+                return function() {
+                    seed = (seed * 9301 + 49297) % 233280;
+                    return seed / 233280;
+                };
+            }
+
+            carve(x, y, seededRandom) {
+                const dirs = [[0, -2], [2, 0], [0, 2], [-2, 0]];
+                
+                // Shuffle with seeded RNG
+                for (let i = dirs.length - 1; i > 0; i--) {
+                    const j = Math.floor(seededRandom() * (i + 1));
+                    [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+                }
+
+                this.grid[y][x] = 1;
+
+                for (let [dx, dy] of dirs) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    const mx = x + dx/2;
+                    const my = y + dy/2;
+
+                    if (nx > 0 && nx < this.grid[0].length - 1 && 
+                        ny > 0 && ny < this.grid.length - 1 && 
+                        this.grid[ny][nx] === 0) {
+                        
+                        this.grid[my][mx] = 1;
+                        this.carve(nx, ny, seededRandom);
+                    }
+                }
+            }
+
+            // --- EQUIDISTANT SPAWN ALGORITHM ---
+            calculateEquidistantSpawns() {
+                const width = this.grid[0].length;
+                const height = this.grid.length;
+                
+                // BFS from goal to calculate distances
+                const dist = Array.from({ length: height }, () => Array(width).fill(-1));
+                const queue = [this.goal];
+                dist[this.goal.y][this.goal.x] = 0;
+                
+                while (queue.length > 0) {
+                    const { x, y } = queue.shift();
+                    const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+                    
+                    for (const [dx, dy] of directions) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        
+                        if (nx >= 0 && nx < width && ny >= 0 && ny < height && 
+                            this.grid[ny][nx] === 1 && dist[ny][nx] === -1) {
+                            dist[ny][nx] = dist[y][x] + 1;
+                            queue.push({ x: nx, y: ny });
+                        }
+                    }
+                }
+                
+                // Find max distance
+                let maxDist = 0;
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        if (dist[y][x] > maxDist) maxDist = dist[y][x];
+                    }
+                }
+                
+                // Target distance: 70% of max
+                const targetDist = Math.floor(maxDist * 0.7);
+                
+                // Build candidates within tolerance
+                const candidates = [];
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        if (Math.abs(dist[y][x] - targetDist) <= 2) {
+                            candidates.push({ x, y, d: dist[y][x] });
+                        }
+                    }
+                }
+                
+                // Pick two equidistant spawns far from each other
+                if (candidates.length < 2) {
+                    // Fallback: use random path cells
+                    this.spawnA = { x: 1, y: 1 };
+                    this.spawnB = { x: width - 2, y: height - 2 };
+                    return;
+                }
+                
+                // Find best pair
+                let bestPair = null;
+                let bestDistance = 0;
+                
+                for (let i = 0; i < Math.min(candidates.length, 20); i++) {
+                    for (let j = i + 1; j < Math.min(candidates.length, 20); j++) {
+                        const c1 = candidates[i];
+                        const c2 = candidates[j];
+                        
+                        // Same distance preferred
+                        if (c1.d !== c2.d) continue;
+                        
+                        // Calculate distance between spawns
+                        const dx = c1.x - c2.x;
+                        const dy = c1.y - c2.y;
+                        const spawnDist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (spawnDist > bestDistance) {
+                            bestDistance = spawnDist;
+                            bestPair = [c1, c2];
+                        }
+                    }
+                }
+                
+                if (bestPair) {
+                    this.spawnA = { x: bestPair[0].x, y: bestPair[0].y };
+                    this.spawnB = { x: bestPair[1].x, y: bestPair[1].y };
+                } else {
+                    // Fallback
+                    this.spawnA = candidates[0];
+                    this.spawnB = candidates[Math.floor(candidates.length / 2)];
+                }
+            }
+
+            hashCode(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return Math.abs(hash);
+            }
+
+            // --- GAME LOGIC ---
+            update() {
+                if (!this.localPlayer) return;
+
+                const speed = 1;
+                let dx = 0, dy = 0;
+
+                // Input
+                if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) dy = -speed;
+                if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) dy = speed;
+                if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) dx = -speed;
+                if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) dx = speed;
+
+                if (dx !== 0 || dy !== 0) {
+                    this.movePlayer(dx, dy);
+                }
+            }
+
+            movePlayer(dx, dy) {
+                const newX = this.localPlayer.pos.x + dx;
+                const newY = this.localPlayer.pos.y + dy;
+
+                // Boundary check
+                if (newX < 0 || newX >= this.grid[0].length || 
+                    newY < 0 || newY >= this.grid.length) {
+                    return;
+                }
+
+                // Wall collision check
+                const targetTile = this.grid[Math.floor(newY)][Math.floor(newX)];
+                if (targetTile === 0) {
+                    return;
+                }
+
+                // Move
+                this.localPlayer.pos.x = newX;
+                this.localPlayer.pos.y = newY;
+
+                // Check win condition
+                if (Math.floor(this.localPlayer.pos.x) === this.goal.x && 
+                    Math.floor(this.localPlayer.pos.y) === this.goal.y) {
+                    this.winRound();
+                }
+            }
+
+            winRound() {
+                this.score.p1++;
+                
+                if (this.score.p1 >= Math.ceil(this.bestOf / 2)) {
+                    this.endDuel();
+                } else {
+                    this.showWinnerOverlay('🏆 You Win!', `Next round...`);
+                }
+            }
+
+            loseRound() {
+                this.score.p2++;
+                
+                if (this.score.p2 >= Math.ceil(this.bestOf / 2)) {
+                    this.endDuel();
+                } else {
+                    this.showWinnerOverlay('💀 You Lost!', `Opponent wins this round`);
+                }
+            }
+
+            showWinnerOverlay(title, message) {
+                document.getElementById('winner-text').textContent = title;
+                document.getElementById('winner-message').textContent = message;
+                document.getElementById('winner-overlay').style.display = 'flex';
+            }
+
+            nextRound() {
+                document.getElementById('winner-overlay').style.display = 'none';
+                this.round++;
+                this.initializeGame();
+            }
+
+            endDuel() {
+                const winner = this.score.p1 > this.score.p2 ? 'You' : 'Opponent';
+                this.showWinnerOverlay(`🏆 ${winner} Wins the Duel!`, `Final Score: ${this.score.p1} - ${this.score.p2}`);
+            }
+
+            // --- RENDERING ---
+            draw() {
+                const theme = {
+                    background: '#000000',
+                    wall: '#000000',
+                    wallBorder: '#111111',
+                    path: '#111111',
+                    exit: '#00ff00',
+                    exitBorder: '#ffffff',
+                    p1: '#ff0000',
+                    p2: '#0000ff'
+                };
+
+                // Clear screen
+                this.ctx.fillStyle = theme.background;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw grid
+                for (let y = 0; y < this.grid.length; y++) {
+                    for (let x = 0; x < this.grid[y].length; x++) {
+                        if (this.grid[y][x] === 0) {
+                            this.ctx.fillStyle = theme.wall;
+                            this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
+                            this.ctx.strokeStyle = theme.wallBorder;
+                            this.ctx.strokeRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
+                        } else {
+                            this.ctx.fillStyle = theme.path;
+                            this.ctx.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
+                        }
+                    }
+                }
+
+                // Draw goal
+                this.ctx.shadowColor = theme.exit;
+                this.ctx.shadowBlur = 10;
+                this.ctx.fillStyle = theme.exit;
+                this.ctx.fillRect(this.goal.x * this.tileSize, this.goal.y * this.tileSize, this.tileSize, this.tileSize);
+                this.ctx.shadowBlur = 0;
+
+                // Draw players
+                if (this.localPlayer) {
+                    this.ctx.fillStyle = theme.p1;
+                    this.ctx.fillRect(
+                        this.localPlayer.pos.x * this.tileSize,
+                        this.localPlayer.pos.y * this.tileSize,
+                        this.tileSize,
+                        this.tileSize
+                    );
+                }
+
+                if (this.remotePlayer) {
+                    this.ctx.fillStyle = theme.p2;
+                    this.ctx.fillRect(
+                        this.remotePlayer.pos.x * this.tileSize,
+                        this.remotePlayer.pos.y * this.tileSize,
+                        this.tileSize,
+                        this.tileSize
+                    );
+                }
+
+                // Update score display
+                document.getElementById('p1-score').textContent = this.score.p1;
+                document.getElementById('p2-score').textContent = this.score.p2;
+                document.getElementById('p1-name').textContent = this.playerName;
+            }
+
+            // --- MOBILE TOUCH CONTROLS ---
+            setupTouchControls() {
+                const btnUp = document.getElementById('btn-up');
+                const btnDown = document.getElementById('btn-down');
+                const btnLeft = document.getElementById('btn-left');
+                const btnRight = document.getElementById('btn-right');
+
+                const addTouchEvents = (btn, key) => {
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = true;
+                    });
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        this.keys[key] = false;
+                    });
+                    btn.addEventListener('mousedown', (e) => {
+                        this.keys[key] = true;
+                    });
+                    btn.addEventListener('mouseup', (e) => {
+                        this.keys[key] = false;
+                    });
+                    btn.addEventListener('mouseleave', (e) => {
+                        this.keys[key] = false;
+                    });
+                };
+
+                addTouchEvents(btnUp, 'ArrowUp');
+                addTouchEvents(btnDown, 'ArrowDown');
+                addTouchEvents(btnLeft, 'ArrowLeft');
+                addTouchEvents(btnRight, 'ArrowRight');
+            }
+
+            gameLoop() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+
+        // Start the game when the page loads
+        const game = new DuelsGame();
+    </script>
 </body>
 </html>
