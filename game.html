@@ -1193,56 +1193,65 @@
 
             // Draw only the eyes and mouth on top of the player
             drawSkinOnPlayer(ctx, skin, x, y, size) {
-                const padding = 2;
+                const padding = 1;
                 const scale = size / 20; // Scale relative to tile size
 
                 // Draw eyes
                 if (skin.eyes === 'shades') {
                     ctx.fillStyle = '#000000';
-                    ctx.fillRect(x + padding + 5 * scale, y + padding + 10 * scale, 8 * scale, 6 * scale);
-                    ctx.fillRect(x + size - padding - 13 * scale, y + padding + 10 * scale, 8 * scale, 6 * scale);
+                    ctx.fillRect(x + padding + 3 * scale, y + padding + 6 * scale, 4 * scale, 3 * scale);
+                    ctx.fillRect(x + size - padding - 7 * scale, y + padding + 6 * scale, 4 * scale, 3 * scale);
                 } else if (skin.eyes === 'ghost') {
                     ctx.fillStyle = '#000000';
                     ctx.beginPath();
-                    ctx.arc(x + padding + 10 * scale, y + padding + 10 * scale, 3 * scale, 0, Math.PI * 2);
+                    ctx.arc(x + padding + 6 * scale, y + padding + 7 * scale, 1.5 * scale, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.beginPath();
-                    ctx.arc(x + size - padding - 10 * scale, y + padding + 10 * scale, 3 * scale, 0, Math.PI * 2);
+                    ctx.arc(x + size - padding - 6 * scale, y + padding + 7 * scale, 1.5 * scale, 0, Math.PI * 2);
                     ctx.fill();
                 } else if (skin.eyes === 'glasses') {
                     ctx.strokeStyle = '#000000';
-                    ctx.lineWidth = 2 * scale;
-                    ctx.strokeRect(x + padding + 4 * scale, y + padding + 8 * scale, 8 * scale, 8 * scale);
-                    ctx.strokeRect(x + size - padding - 12 * scale, y + padding + 8 * scale, 8 * scale, 8 * scale);
+                    ctx.lineWidth = 1 * scale;
+                    ctx.strokeRect(x + padding + 2 * scale, y + padding + 5 * scale, 4 * scale, 4 * scale);
+                    ctx.strokeRect(x + size - padding - 6 * scale, y + padding + 5 * scale, 4 * scale, 4 * scale);
                 } else if (skin.eyes === 'hearts') {
                     ctx.fillStyle = '#ff0000';
-                    ctx.font = `bold ${8 * scale}px Arial`;
-                    ctx.fillText('♥', x + padding + 6 * scale, y + padding + 12 * scale);
-                    ctx.fillText('♥', x + size - padding - 12 * scale, y + padding + 12 * scale);
+                    ctx.font = `bold ${4 * scale}px Arial`;
+                    ctx.fillText('♥', x + padding + 3 * scale, y + padding + 8 * scale);
+                    ctx.fillText('♥', x + size - padding - 7 * scale, y + padding + 8 * scale);
                 } else if (skin.eyes === 'closed') {
-                    ctx.strokeStyle = '#000000';
-                    ctx.lineWidth = 2 * scale;
-                    ctx.beginPath();
-                    ctx.arc(x + padding + 10 * scale, y + padding + 10 * scale, 3 * scale, 0, Math.PI);
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.arc(x + size - padding - 10 * scale, y + padding + 10 * scale, 3 * scale, 0, Math.PI);
-                    ctx.stroke();
-                } else if (skin.eyes === 'line') {
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 1 * scale;
                     ctx.beginPath();
-                    ctx.moveTo(x + padding + 7 * scale, y + padding + 10 * scale);
-                    ctx.lineTo(x + padding + 13 * scale, y + padding + 10 * scale);
+                    ctx.arc(x + padding + 6 * scale, y + padding + 7 * scale, 1.5 * scale, 0, Math.PI);
                     ctx.stroke();
                     ctx.beginPath();
-                    ctx.moveTo(x + size - padding - 13 * scale, y + padding + 10 * scale);
-                    ctx.lineTo(x + size - padding - 7 * scale, y + padding + 10 * scale);
+                    ctx.arc(x + size - padding - 6 * scale, y + padding + 7 * scale, 1.5 * scale, 0, Math.PI);
+                    ctx.stroke();
+                } else if (skin.eyes === 'line') {
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 0.5 * scale;
+                    ctx.beginPath();
+                    ctx.moveTo(x + padding + 4 * scale, y + padding + 7 * scale);
+                    ctx.lineTo(x + padding + 8 * scale, y + padding + 7 * scale);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(x + size - padding - 8 * scale, y + padding + 7 * scale);
+                    ctx.lineTo(x + size - padding - 4 * scale, y + padding + 7 * scale);
                     ctx.stroke();
                 } else if (Array.isArray(skin.eyes)) {
                     ctx.fillStyle = '#000000';
-                    skin.eyes.forEach(([ex, ey]) => {
-                        ctx.fillRect(x + padding + ex * scale, y + padding + ey * scale, 3 * scale, 3 * scale);
+                    // Center the eyes
+                    const centerOffset = (size - padding * 2 - (skin.eyes.length > 1 ? 6 : 0)) / 2;
+                    skin.eyes.forEach(([ex, ey], idx) => {
+                        if (skin.eyes.length === 1) {
+                            // Single eye - center it
+                            ctx.fillRect(x + padding + (size - padding * 2) / 2 - 1 * scale, y + padding + 6 * scale, 2 * scale, 2 * scale);
+                        } else {
+                            // Two eyes - center them together
+                            const adjustedX = idx === 0 ? 2 : 8;
+                            ctx.fillRect(x + padding + centerOffset + adjustedX * scale, y + padding + 6 * scale, 2 * scale, 2 * scale);
+                        }
                     });
                 }
 

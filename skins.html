@@ -269,11 +269,6 @@
                 ctx.lineWidth = 2;
                 ctx.strokeRect(padding + 4, padding + 8, 8, 8);
                 ctx.strokeRect(width - padding - 12, padding + 8, 8, 8);
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 1;
-                ctx.lineTo(padding + 12, padding + 12);
-                ctx.lineTo(width - padding - 12, padding + 12);
-                ctx.stroke();
             } else if (skin.eyes === 'hearts') {
                 ctx.fillStyle = '#ff0000';
                 ctx.font = 'bold 8px Arial';
@@ -301,8 +296,17 @@
                 ctx.stroke();
             } else if (Array.isArray(skin.eyes)) {
                 ctx.fillStyle = '#000000';
-                skin.eyes.forEach(([x, y]) => {
-                    ctx.fillRect(padding + x, padding + y, 3, 3);
+                // Center the eyes horizontally
+                const centerOffset = (width - padding * 2 - (skin.eyes.length > 1 ? 10 : 0)) / 2;
+                skin.eyes.forEach(([x, y], idx) => {
+                    if (skin.eyes.length === 1) {
+                        // Single eye - center it
+                        ctx.fillRect(padding + (width - padding * 2) / 2 - 1.5, padding + y, 3, 3);
+                    } else {
+                        // Two eyes - center them together
+                        const adjustedX = idx === 0 ? 3 : 10;
+                        ctx.fillRect(padding + centerOffset + adjustedX, padding + y, 3, 3);
+                    }
                 });
             }
 
