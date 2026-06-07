@@ -330,126 +330,126 @@
             switch (skin.mouth) {
                 case 'smile':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY, 5, 0, Math.PI);
+                    ctx.arc(mouthX, mouthY, 5 * scale, 0, Math.PI);
                     ctx.stroke();
                     break;
                 case 'frown':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY + 3, 5, Math.PI, Math.PI * 2);
+                    ctx.arc(mouthX, mouthY + 3 * scale, 5 * scale, Math.PI, Math.PI * 2);
                     ctx.stroke();
                     break;
                 case 'wink':
-                    ctx.fillRect(mouthX - 3, mouthY - 2, 6, 4);
+                    ctx.fillRect(mouthX - 3 * scale, mouthY - 2 * scale, 6 * scale, 4 * scale);
                     break;
                 case 'cool':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY, 4, 0, Math.PI);
+                    ctx.arc(mouthX, mouthY, 4 * scale, 0, Math.PI);
                     ctx.stroke();
                     break;
                 case 'surprise':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY, 2, 0, Math.PI * 2);
+                    ctx.arc(mouthX, mouthY, 2 * scale, 0, Math.PI * 2);
                     ctx.fill();
                     break;
                 case 'yawn':
                     ctx.beginPath();
-                    ctx.moveTo(mouthX - 3, mouthY - 2);
-                    ctx.lineTo(mouthX, mouthY + 2);
-                    ctx.lineTo(mouthX + 3, mouthY - 2);
+                    ctx.moveTo(mouthX - 3 * scale, mouthY - 2 * scale);
+                    ctx.lineTo(mouthX, mouthY + 2 * scale);
+                    ctx.lineTo(mouthX + 3 * scale, mouthY - 2 * scale);
                     ctx.stroke();
                     break;
                 case 'angry':
                     ctx.beginPath();
-                    ctx.moveTo(mouthX - 4, mouthY + 2);
-                    ctx.lineTo(mouthX + 4, mouthY - 2);
+                    ctx.moveTo(mouthX - 4 * scale, mouthY + 2 * scale);
+                    ctx.lineTo(mouthX + 4 * scale, mouthY - 2 * scale);
                     ctx.stroke();
                     break;
                 case 'evil':
                     ctx.beginPath();
-                    ctx.moveTo(mouthX - 4, mouthY - 2);
-                    ctx.quadraticCurveTo(mouthX, mouthY + 3, mouthX + 4, mouthY - 2);
+                    ctx.moveTo(mouthX - 4 * scale, mouthY - 2 * scale);
+                    ctx.quadraticCurveTo(mouthX, mouthY + 3 * scale, mouthX + 4 * scale, mouthY - 2 * scale);
                     ctx.stroke();
                     break;
                 case 'nerdy':
-                    ctx.fillRect(mouthX - 2, mouthY, 4, 2);
+                    ctx.fillRect(mouthX - 2 * scale, mouthY, 4 * scale, 2 * scale);
                     break;
                 case 'xd':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY + 1, 4, 0, Math.PI);
+                    ctx.arc(mouthX, mouthY + 1 * scale, 4 * scale, 0, Math.PI);
                     ctx.stroke();
-                    ctx.font = 'bold 6px Arial';
-                    ctx.fillText('D', mouthX + 3, mouthY - 1);
+                    ctx.font = `bold ${6 * scale}px Arial`;
+                    ctx.fillText('D', mouthX + 3 * scale, mouthY - 1 * scale);
                     break;
                 case 'love':
-                    ctx.font = 'bold 8px Arial';
-                    ctx.fillText('♥', mouthX - 2, mouthY + 2);
+                    ctx.font = `bold ${8 * scale}px Arial`;
+                    ctx.fillText('♥', mouthX - 2 * scale, mouthY + 2 * scale);
                     break;
                 case 'dizzy':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY, 1, 0, Math.PI * 2);
+                    ctx.arc(mouthX, mouthY, 1 * scale, 0, Math.PI * 2);
                     ctx.fill();
                     break;
                 case 'confused':
                     ctx.beginPath();
-                    ctx.moveTo(mouthX - 3, mouthY);
-                    ctx.quadraticCurveTo(mouthX, mouthY - 2, mouthX + 3, mouthY);
+                    ctx.moveTo(mouthX - 3 * scale, mouthY);
+                    ctx.quadraticCurveTo(mouthX, mouthY - 2 * scale, mouthX + 3 * scale, mouthY);
                     ctx.stroke();
                     break;
                 case 'excited':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY, 3, 0, Math.PI);
+                    ctx.arc(mouthX, mouthY, 3 * scale, 0, Math.PI);
                     ctx.stroke();
-                    ctx.fillRect(mouthX - 4, mouthY - 4, 2, 3);
-                    ctx.fillRect(mouthX + 2, mouthY - 4, 2, 3);
+                    ctx.fillRect(mouthX - 4 * scale, mouthY - 4 * scale, 2 * scale, 3 * scale);
+                    ctx.fillRect(mouthX + 2 * scale, mouthY - 4 * scale, 2 * scale, 3 * scale);
                     break;
                 case 'pirate':
-                    ctx.fillRect(mouthX - 2, mouthY, 4, 2);
-                    ctx.fillRect(mouthX - 1, mouthY - 1, 2, 1);
+                    ctx.fillRect(mouthX - 2 * scale, mouthY, 4 * scale, 2 * scale);
+                    ctx.fillRect(mouthX - 1 * scale, mouthY - 1 * scale, 2 * scale, 1 * scale);
                     break;
                 case 'boo':
-                    ctx.fillRect(mouthX - 2, mouthY - 1, 4, 3);
+                    ctx.fillRect(mouthX - 2 * scale, mouthY - 1 * scale, 4 * scale, 3 * scale);
                     break;
                 case 'party':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY, 3, 0, Math.PI);
+                    ctx.arc(mouthX, mouthY, 3 * scale, 0, Math.PI);
                     ctx.stroke();
-                    ctx.fillRect(mouthX - 3, mouthY - 3, 2, 2);
-                    ctx.fillRect(mouthX + 1, mouthY - 3, 2, 2);
+                    ctx.fillRect(mouthX - 3 * scale, mouthY - 3 * scale, 2 * scale, 2 * scale);
+                    ctx.fillRect(mouthX + 1 * scale, mouthY - 3 * scale, 2 * scale, 2 * scale);
                     break;
                 case 'grumpy':
                     ctx.beginPath();
-                    ctx.moveTo(mouthX - 4, mouthY - 1);
-                    ctx.lineTo(mouthX + 4, mouthY + 1);
+                    ctx.moveTo(mouthX - 4 * scale, mouthY - 1 * scale);
+                    ctx.lineTo(mouthX + 4 * scale, mouthY + 1 * scale);
                     ctx.stroke();
                     break;
                 case 'shy':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY, 2, 0, Math.PI);
+                    ctx.arc(mouthX, mouthY, 2 * scale, 0, Math.PI);
                     ctx.stroke();
                     break;
                 case 'mischief':
                     ctx.beginPath();
-                    ctx.moveTo(mouthX - 3, mouthY);
-                    ctx.quadraticCurveTo(mouthX, mouthY + 2, mouthX + 3, mouthY);
+                    ctx.moveTo(mouthX - 3 * scale, mouthY);
+                    ctx.quadraticCurveTo(mouthX, mouthY + 2 * scale, mouthX + 3 * scale, mouthY);
                     ctx.stroke();
-                    ctx.fillRect(mouthX - 1, mouthY - 2, 2, 1);
+                    ctx.fillRect(mouthX - 1 * scale, mouthY - 2 * scale, 2 * scale, 1 * scale);
                     break;
                 case 'sweat':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY, 2, 0, Math.PI);
+                    ctx.arc(mouthX, mouthY, 2 * scale, 0, Math.PI);
                     ctx.stroke();
-                    ctx.fillRect(width - padding - 6, padding + 5, 2, 3);
+                    ctx.fillRect(width - padding - 6 * scale, padding + 5 * scale, 2 * scale, 3 * scale);
                     break;
                 case 'grateful':
                     ctx.beginPath();
-                    ctx.arc(mouthX, mouthY, 3, 0, Math.PI);
+                    ctx.arc(mouthX, mouthY, 3 * scale, 0, Math.PI);
                     ctx.stroke();
-                    ctx.fillRect(mouthX - 2, mouthY - 3, 1, 2);
-                    ctx.fillRect(mouthX + 1, mouthY - 3, 1, 2);
+                    ctx.fillRect(mouthX - 2 * scale, mouthY - 3 * scale, 1 * scale, 2 * scale);
+                    ctx.fillRect(mouthX + 1 * scale, mouthY - 3 * scale, 1 * scale, 2 * scale);
                     break;
                 case 'straight':
                 case 'neutral':
-                    ctx.fillRect(mouthX - 3, mouthY, 6, 1);
+                    ctx.fillRect(mouthX - 3 * scale, mouthY, 6 * scale, 1 * scale);
                     break;
                 case 'none':
                     break;
