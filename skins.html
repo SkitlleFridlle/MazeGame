@@ -238,14 +238,16 @@
         let currentSkin = parseInt(localStorage.getItem('mazeRPGSkin') || '1');
 
         function drawSkin(ctx, skin, width, height, isLarge = false) {
-            const padding = isLarge ? 10 : 5;
+            const padding = 5;
             const bodySize = width - (padding * 2);
-            const scale = isLarge ? 2 : 1;
 
             // Draw body (white square with glow)
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(padding, padding, bodySize, bodySize);
 
+            // Calculate scale based on canvas size
+            const scale = width / 20; // 20 is the base size
+            
             // Draw eyes
             if (skin.eyes === 'shades') {
                 ctx.fillStyle = '#000000';
@@ -253,46 +255,46 @@
                 ctx.fillRect(width - padding - 13 * scale, padding + 10 * scale, 8 * scale, 6 * scale);
                 ctx.strokeStyle = '#000000';
                 ctx.lineWidth = 1;
-                ctx.lineTo(padding + 13, padding + 13);
-                ctx.lineTo(width - padding - 13, padding + 13);
+                ctx.lineTo(padding + 13 * scale, padding + 13 * scale);
+                ctx.lineTo(width - padding - 13 * scale, padding + 13 * scale);
                 ctx.stroke();
             } else if (skin.eyes === 'ghost') {
                 ctx.fillStyle = '#000000';
                 ctx.beginPath();
-                ctx.arc(padding + 10, padding + 10, 3, 0, Math.PI * 2);
+                ctx.arc(padding + 10 * scale, padding + 10 * scale, 3 * scale, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.beginPath();
-                ctx.arc(width - padding - 10, padding + 10, 3, 0, Math.PI * 2);
+                ctx.arc(width - padding - 10 * scale, padding + 10 * scale, 3 * scale, 0, Math.PI * 2);
                 ctx.fill();
             } else if (skin.eyes === 'glasses') {
                 ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(padding + 4, padding + 8, 8, 8);
-                ctx.strokeRect(width - padding - 12, padding + 8, 8, 8);
+                ctx.lineWidth = 2 * scale;
+                ctx.strokeRect(padding + 4 * scale, padding + 8 * scale, 8 * scale, 8 * scale);
+                ctx.strokeRect(width - padding - 12 * scale, padding + 8 * scale, 8 * scale, 8 * scale);
             } else if (skin.eyes === 'hearts') {
                 ctx.fillStyle = '#ff0000';
-                ctx.font = 'bold 8px Arial';
-                ctx.fillText('♥', padding + 6, padding + 12);
-                ctx.fillText('♥', width - padding - 12, padding + 12);
+                ctx.font = `bold ${8 * scale}px Arial`;
+                ctx.fillText('♥', padding + 6 * scale, padding + 12 * scale);
+                ctx.fillText('♥', width - padding - 12 * scale, padding + 12 * scale);
             } else if (skin.eyes === 'closed') {
                 ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2 * scale;
                 ctx.beginPath();
-                ctx.arc(padding + 10, padding + 10, 3, 0, Math.PI);
+                ctx.arc(padding + 10 * scale, padding + 10 * scale, 3 * scale, 0, Math.PI);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.arc(width - padding - 10, padding + 10, 3, 0, Math.PI);
+                ctx.arc(width - padding - 10 * scale, padding + 10 * scale, 3 * scale, 0, Math.PI);
                 ctx.stroke();
             } else if (skin.eyes === 'line') {
                 ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 1;
+                ctx.lineWidth = 1 * scale;
                 ctx.beginPath();
-                ctx.moveTo(padding + 7, padding + 10);
-                ctx.lineTo(padding + 13, padding + 10);
+                ctx.moveTo(padding + 7 * scale, padding + 10 * scale);
+                ctx.lineTo(padding + 13 * scale, padding + 10 * scale);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.moveTo(width - padding - 13, padding + 10);
-                ctx.lineTo(width - padding - 7, padding + 10);
+                ctx.moveTo(width - padding - 13 * scale, padding + 10 * scale);
+                ctx.lineTo(width - padding - 7 * scale, padding + 10 * scale);
                 ctx.stroke();
             } else if (Array.isArray(skin.eyes)) {
                 ctx.fillStyle = '#000000';
@@ -301,17 +303,17 @@
                 skin.eyes.forEach(([x, y], idx) => {
                     if (skin.eyes.length === 1) {
                         // Single eye - center it
-                        ctx.fillRect(centerX - 1.5, padding + 8, 3, 3);
+                        ctx.fillRect(centerX - 1.5 * scale, padding + 8 * scale, 3 * scale, 3 * scale);
                     } else {
                         // Two eyes - center them together
-                        const eyeSpacing = 7;
-                        const leftEyeX = centerX - eyeSpacing / 2 - 1.5;
-                        const rightEyeX = centerX + eyeSpacing / 2 - 1.5;
-                        const eyeY = padding + 8;
+                        const eyeSpacing = 7 * scale;
+                        const leftEyeX = centerX - eyeSpacing / 2 - 1.5 * scale;
+                        const rightEyeX = centerX + eyeSpacing / 2 - 1.5 * scale;
+                        const eyeY = padding + 8 * scale;
                         if (idx === 0) {
-                            ctx.fillRect(leftEyeX, eyeY, 3, 3);
+                            ctx.fillRect(leftEyeX, eyeY, 3 * scale, 3 * scale);
                         } else {
-                            ctx.fillRect(rightEyeX, eyeY, 3, 3);
+                            ctx.fillRect(rightEyeX, eyeY, 3 * scale, 3 * scale);
                         }
                     }
                 });
@@ -319,10 +321,10 @@
 
             // Draw mouth
             ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 1 * scale;
             ctx.fillStyle = '#000000';
 
-            const mouthY = padding + 18;
+            const mouthY = padding + 18 * scale;
             const mouthX = width / 2;
 
             switch (skin.mouth) {
