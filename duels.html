@@ -238,6 +238,96 @@
             color: #888;
         }
 
+        #server-name-input {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 2px solid #4ecdc4;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-family: inherit;
+            margin: 10px 0;
+            width: 200px;
+        }
+
+        #server-name-input::placeholder {
+            color: #888;
+        }
+
+        #server-list-overlay, #create-room-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            display: none;
+        }
+
+        .server-item {
+            background: rgba(78, 205, 196, 0.1);
+            border: 2px solid rgba(78, 205, 196, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .server-item:hover {
+            background: rgba(78, 205, 196, 0.2);
+            border-color: rgba(78, 205, 196, 0.8);
+            transform: translateX(5px);
+        }
+
+        .server-info {
+            text-align: left;
+            flex: 1;
+        }
+
+        .server-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-bottom: 5px;
+        }
+
+        .server-status {
+            font-size: 14px;
+            color: #cccccc;
+        }
+
+        .server-players {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-left: 20px;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .server-full {
+            color: #ff6b6b;
+        }
+
+        .server-available {
+            color: #4ecdc4;
+        }
+
+        .empty-servers {
+            font-size: 18px;
+            color: #888;
+            margin: 30px 0;
+        }
+
         @media (min-width: 768px) {
             #mobile-controls {
                 display: none;
@@ -276,11 +366,34 @@
                 <h2>⚔️ Duels</h2>
                 <p>Enter your name:</p>
                 <input type="text" id="player-name-input" placeholder="Your name" maxlength="20">
-                <button class="overlay-btn" onclick="game.joinRoom()">Join Room</button>
+                <button class="overlay-btn" onclick="game.showServerList()">Browse Servers</button>
                 <p style="margin-top: 30px; font-size: 14px; color: #888;">Or create a new room:</p>
-                <button class="overlay-btn" onclick="game.createNewRoom()">🎲 New Room</button>
+                <button class="overlay-btn" onclick="game.showCreateRoomDialog()">🎲 Create Room</button>
             </div>
         </div>
+
+        <!-- Server List Overlay -->
+        <div id="server-list-overlay">
+            <div class="overlay-content" style="max-height: 80vh; overflow-y: auto; width: 90%; max-width: 600px;">
+                <h2>🌐 Server List</h2>
+                <div id="servers-container" style="margin-top: 20px; text-align: left;">
+                    <!-- Servers will be populated here -->
+                </div>
+                <button class="overlay-btn" onclick="game.backToSetup()" style="margin-top: 20px;">← Back</button>
+            </div>
+        </div>
+
+        <!-- Create Room Dialog -->
+        <div id="create-room-overlay">
+            <div class="overlay-content">
+                <h2>🎲 Create Room</h2>
+                <p>Enter server name:</p>
+                <input type="text" id="server-name-input" placeholder="Server name" maxlength="30">
+                <button class="overlay-btn" onclick="game.createAndPublishRoom()">Create & Publish</button>
+                <button class="overlay-btn" onclick="game.backToSetup()" style="background: rgba(255, 100, 100, 0.5); margin-top: 10px;">Cancel</button>
+            </div>
+        </div>
+
 
         <!-- Waiting Overlay -->
         <div id="waiting-overlay">
@@ -846,6 +959,136 @@
                 addTouchEvents(btnDown, 'ArrowDown');
                 addTouchEvents(btnLeft, 'ArrowLeft');
                 addTouchEvents(btnRight, 'ArrowRight');
+            }
+
+            // --- SERVER MANAGEMENT ---
+            showServerList() {
+                const nameInput = document.getElementById('player-name-input');
+                this.playerName = nameInput.value.trim() || 'Player';
+                
+                document.getElementById('room-setup-overlay').style.display = 'none';
+                document.getElementById('server-list-overlay').style.display = 'flex';
+                
+                this.refreshServerList();
+            }
+
+            showCreateRoomDialog() {
+                const nameInput = document.getElementById('player-name-input');
+                this.playerName = nameInput.value.trim() || 'Player';
+                
+                document.getElementById('room-setup-overlay').style.display = 'none';
+                document.getElementById('create-room-overlay').style.display = 'flex';
+                document.getElementById('server-name-input').value = '';
+                document.getElementById('server-name-input').focus();
+            }
+
+            backToSetup() {
+                document.getElementById('server-list-overlay').style.display = 'none';
+                document.getElementById('create-room-overlay').style.display = 'none';
+                document.getElementById('room-setup-overlay').style.display = 'flex';
+            }
+
+            createAndPublishRoom() {
+                const serverNameInput = document.getElementById('server-name-input');
+                const serverName = serverNameInput.value.trim();
+                
+                if (!serverName) {
+                    alert('Please enter a server name');
+                    return;
+                }
+                
+                // Generate room code
+                this.roomCode = this.generateRoomCode();
+                
+                // Create server object
+                const server = {
+                    id: this.roomCode,
+                    name: serverName,
+                    creator: this.playerName,
+                    createdAt: Date.now(),
+                    players: [this.playerName],
+                    maxPlayers: 2,
+                    status: 'waiting'
+                };
+                
+                // Save to localStorage
+                let servers = JSON.parse(localStorage.getItem('duelServers') || '[]');
+                servers.push(server);
+                localStorage.setItem('duelServers', JSON.stringify(servers));
+                
+                // Join the room
+                document.getElementById('create-room-overlay').style.display = 'none';
+                document.getElementById('waiting-overlay').style.display = 'flex';
+                document.getElementById('room-code-display').textContent = this.roomCode;
+                document.getElementById('room-code').textContent = this.roomCode;
+                
+                this.startPolling();
+            }
+
+            refreshServerList() {
+                const container = document.getElementById('servers-container');
+                let servers = JSON.parse(localStorage.getItem('duelServers') || '[]');
+                
+                // Remove expired servers (older than 1 hour)
+                const oneHourAgo = Date.now() - (60 * 60 * 1000);
+                servers = servers.filter(s => s.createdAt > oneHourAgo);
+                localStorage.setItem('duelServers', JSON.stringify(servers));
+                
+                if (servers.length === 0) {
+                    container.innerHTML = '<div class="empty-servers">No servers available. Create one!</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                servers.forEach(server => {
+                    const isFull = server.players.length >= server.maxPlayers;
+                    const playerCount = `${server.players.length}/${server.maxPlayers}`;
+                    const statusClass = isFull ? 'server-full' : 'server-available';
+                    
+                    const serverEl = document.createElement('div');
+                    serverEl.className = 'server-item';
+                    serverEl.innerHTML = `
+                        <div class="server-info">
+                            <div class="server-name">${server.name}</div>
+                            <div class="server-status">Created by ${server.creator}</div>
+                        </div>
+                        <div class="server-players ${statusClass}">${playerCount}</div>
+                    `;
+                    
+                    if (!isFull) {
+                        serverEl.style.cursor = 'pointer';
+                        serverEl.addEventListener('click', () => this.joinServer(server));
+                    } else {
+                        serverEl.style.opacity = '0.5';
+                        serverEl.style.cursor = 'not-allowed';
+                    }
+                    
+                    container.appendChild(serverEl);
+                });
+            }
+
+            joinServer(server) {
+                // Add player to server
+                let servers = JSON.parse(localStorage.getItem('duelServers') || '[]');
+                const serverIndex = servers.findIndex(s => s.id === server.id);
+                
+                if (serverIndex !== -1) {
+                    if (servers[serverIndex].players.length < servers[serverIndex].maxPlayers) {
+                        servers[serverIndex].players.push(this.playerName);
+                        localStorage.setItem('duelServers', JSON.stringify(servers));
+                        
+                        this.roomCode = server.id;
+                        document.getElementById('server-list-overlay').style.display = 'none';
+                        document.getElementById('waiting-overlay').style.display = 'flex';
+                        document.getElementById('room-code-display').textContent = this.roomCode;
+                        document.getElementById('room-code').textContent = this.roomCode;
+                        
+                        this.startPolling();
+                    } else {
+                        alert('Server is full!');
+                        this.refreshServerList();
+                    }
+                }
             }
 
             gameLoop() {
