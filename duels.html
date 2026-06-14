@@ -988,6 +988,14 @@
                 document.getElementById('room-setup-overlay').style.display = 'flex';
             }
 
+            clearAllServers() {
+                if (confirm('Are you sure you want to clear all servers? This cannot be undone.')) {
+                    localStorage.setItem('duelServers', JSON.stringify([]));
+                    this.refreshServerList();
+                    alert('All servers have been cleared!');
+                }
+            }
+
             createAndPublishRoom() {
                 const serverNameInput = document.getElementById('server-name-input');
                 const serverName = serverNameInput.value.trim();
