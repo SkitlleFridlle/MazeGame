@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/duel.js": {
+      "maxDuration": 10
+    }
+  }
+}
