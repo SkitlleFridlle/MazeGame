@@ -552,15 +552,61 @@
 
             async pollGameState() {
                 try {
-                    // For now, simulate local game state
-                    // In production, this would call /api/duel?action=state&room=<code>
-                    
-                    if (!this.gameState) {
-                        // Initialize game state
-                        this.initializeGame();
+                    const res = await fetch(`/api/duel?room=${encodeURIComponent(this.roomCode)}`);
+                    const json = await res.json();
+                    if (!json.ok) return;
+                    const state = json.state;
+                    this.lastState = state;
+
+                    // Resolve slot
+                    if (state.p1?.id === this.playerId) this.mySlot = 'p1';
+                    else if (state.p2?.id === this.playerId) this.mySlot = 'p2';
+                    else if (state.p1 && state.p2) this.mySlot = 'observer';
+                    else this.mySlot = null;
+
+                    // First time we see both players → init visuals from server
+                    if (state.p1 && state.p2 && !this.gameInitialized) {
+                        this.gameInitialized = true;
+                        this.generateMaze(state.seed);
+                        this.goal = state.goal;
+
+                        this.localPlayer = { 
+                            id: this.playerId, 
+                            name: this.playerName,
+                            pos: { ...(this.mySlot === 'p1' ? state.p1.pos : state.p2.pos) },
+                            skin: parseInt(localStorage.getItem('mazeRPGSkin') || '1') 
+                        };
+                        this.remotePlayer = { 
+                            id: 'opponent',
+                            name: (this.mySlot === 'p1' ? state.p2.name : state.p1.name),
+                            pos: { ...(this.mySlot === 'p1' ? state.p2.pos : state.p1.pos) },
+                            skin: (this.mySlot === 'p1' ? state.p2.skin : state.p1.skin) || 1 
+                        };
+
+                        this.gameState = state;
+                        document.getElementById('waiting-overlay').style.display = 'none';
+                        if (state.phase === 'countdown') this.startCountdown();
                     }
-                } catch (error) {
-                    console.error('Polling error:', error);
+
+                    // Sync positions from server (every poll, even for local player — server is authoritative)
+                    if (this.gameInitialized && state.p1 && state.p2) {
+                        if (this.mySlot === 'p1') {
+                            this.localPlayer.pos = state.p1.pos;
+                            this.remotePlayer.pos = state.p2.pos;
+                        } else if (this.mySlot === 'p2') {
+                            this.localPlayer.pos = state.p2.pos;
+                            this.remotePlayer.pos = state.p1.pos;
+                        }
+                    }
+
+                    // Win
+                    if (state.phase === 'over' && state.winner && !this.lastWinnerHandled) {
+                        this.lastWinnerHandled = state.winner;
+                        const isWin = state.winner === this.mySlot;
+                        this.showWinnerOverlay(isWin ? '🏆 You Win!' : '💀 You Lost!', isWin ? 'Next round...' : 'Opponent wins this round');
+                    }
+                } catch (e) {
+                    console.error('Poll error', e);
                 }
             }
 
