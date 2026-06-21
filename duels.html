@@ -1008,14 +1008,100 @@
             }
 
             // --- SERVER MANAGEMENT ---
-            showServerList() {
+            async showServerList() {
                 const nameInput = document.getElementById('player-name-input');
                 this.playerName = nameInput.value.trim() || 'Player';
                 
                 document.getElementById('room-setup-overlay').style.display = 'none';
                 document.getElementById('server-list-overlay').style.display = 'flex';
                 
-                this.refreshServerList();
+                // Fetch active servers from all rooms
+                await this.fetchAndDisplayServers();
+            }
+
+            async fetchAndDisplayServers() {
+                const container = document.getElementById('servers-container');
+                
+                try {
+                    // Get all servers from localStorage (local servers)
+                    let servers = JSON.parse(localStorage.getItem('duelServers') || '[]');
+                    
+                    // Remove expired servers (older than 1 hour)
+                    const oneHourAgo = Date.now() - (60 * 60 * 1000);
+                    servers = servers.filter(s => s.createdAt > oneHourAgo);
+                    localStorage.setItem('duelServers', JSON.stringify(servers));
+                    
+                    // Also check Redis for active servers by polling known rooms
+                    // For now, we'll display localStorage servers and also check Redis
+                    const redisServers = await this.getActiveServersFromRedis();
+                    
+                    // Merge servers (Redis takes precedence)
+                    const allServers = [...redisServers, ...servers.filter(s => !redisServers.find(rs => rs.id === s.id))];
+                    
+                    this.displayServers(allServers);
+                } catch (e) {
+                    console.error('Error fetching servers:', e);
+                    // Fallback to localStorage only
+                    this.refreshServerList();
+                }
+            }
+
+            async getActiveServersFromRedis() {
+                // Try to fetch from a list of common room codes or use a discovery endpoint
+                // For now, return empty array - servers will be discovered via localStorage
+                return [];
+            }
+
+            displayServers(servers) {
+                const container = document.getElementById('servers-container');
+                
+                if (servers.length === 0) {
+                    container.innerHTML = '<div class="empty-servers">No servers available. Create one!</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                servers.forEach(server => {
+                    const isFull = server.players.length >= server.maxPlayers;
+                    const playerCount = `${server.players.length}/${server.maxPlayers}`;
+                    const statusClass = isFull ? 'server-full' : 'server-available';
+                    
+                    const serverEl = document.createElement('div');
+                    serverEl.className = 'server-item';
+                    serverEl.innerHTML = `
+                        <div class="server-info">
+                            <div class="server-name">${server.name}</div>
+                            <div class="server-status">Created by ${server.creator}</div>
+                        </div>
+                        <div class="server-players ${statusClass}">${playerCount}</div>
+                    `;
+                    
+                    if (!isFull) {
+                        serverEl.style.cursor = 'pointer';
+                        serverEl.addEventListener('click', () => this.joinServerFromList(server));
+                    } else {
+                        serverEl.style.opacity = '0.5';
+                        serverEl.style.cursor = 'not-allowed';
+                    }
+                    
+                    container.appendChild(serverEl);
+                });
+            }
+
+            joinServerFromList(server) {
+                this.roomCode = server.id;
+                
+                // Update URL with room code
+                window.history.replaceState({}, '', `?room=${this.roomCode}`);
+                
+                // Hide server list and show waiting overlay
+                document.getElementById('server-list-overlay').style.display = 'none';
+                document.getElementById('waiting-overlay').style.display = 'flex';
+                document.getElementById('room-code-display').textContent = this.roomCode;
+                document.getElementById('room-code').textContent = this.roomCode;
+                
+                // Start polling
+                this.startPolling();
             }
 
             showCreateRoomDialog() {
